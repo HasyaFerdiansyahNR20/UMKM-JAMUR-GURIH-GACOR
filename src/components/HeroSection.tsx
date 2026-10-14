@@ -90,14 +90,18 @@ export const HeroSection: React.FC<HeroSectionProps> = ({ featuredProduct }) => 
       </div>
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10 w-full">
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-14 items-center">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-14 items-center">
 
-          {/* 2. SISI KIRI: Foto Piring Jamur Crispy & Badge Scalloped "Mulai dari 5 Ribuan" */}
-          <div className="lg:col-span-6 relative flex justify-center order-2 lg:order-1">
-            <div className="relative w-full max-w-md sm:max-w-lg">
+          {/* 2. SISI KIRI: Foto Piring Jamur Crispy & Badge Scalloped (order-1: Tampil di Atas pada Mobile) */}
+          <div className="lg:col-span-6 relative flex justify-center order-1 lg:order-1 pt-4 sm:pt-0">
+            <div
+              className="relative w-full max-w-md sm:max-w-lg cursor-pointer"
+              onClick={handleScrollToCatalog}
+              title="Klik untuk melihat menu katalog"
+            >
               
               {/* Foto Piring Jamur Crispy dengan Bayangan Alami */}
-              <div className="relative z-10 rounded-[36px] overflow-hidden bg-white/40 p-2 border-2 border-white/80 shadow-2xl shadow-amber-900/15 transform hover:scale-[1.015] transition-transform duration-500">
+              <div className="relative z-10 rounded-[36px] overflow-hidden bg-white/40 p-2 border-2 border-white/80 shadow-2xl shadow-amber-900/15 transform hover:scale-[1.015] active:scale-98 transition-transform duration-500">
                 <img
                   src={productImage}
                   alt="Jamur Crispy Original Gurih Gacor"
@@ -145,8 +149,8 @@ export const HeroSection: React.FC<HeroSectionProps> = ({ featuredProduct }) => 
             </div>
           </div>
 
-          {/* 3. SISI KANAN: Tipografi Judul, Rating, dan Dual Tombol CTA */}
-          <div className="lg:col-span-6 space-y-6 text-center lg:text-left order-1 lg:order-2">
+          {/* 3. SISI KANAN: Tipografi Judul, Rating, dan Dual Tombol CTA (order-2: Tampil di Bawah Foto pada Mobile) */}
+          <div className="lg:col-span-6 space-y-5 sm:space-y-6 text-center lg:text-left order-2 lg:order-2">
             
             {/* Tagline Motto Badge dengan Maskot Resmi */}
             <div className="inline-flex items-center gap-2.5 px-3.5 py-1.5 rounded-full bg-gradient-to-r from-orange-500 via-orange-600 to-amber-600 text-white shadow-md shadow-orange-500/25">
