@@ -94,7 +94,8 @@ export const CatalogGrid: React.FC<CatalogGridProps> = ({ products }) => {
   };
 
   return (
-    <section id="katalog" className="py-20 bg-[#faf8f5]">
+    <section id="katalog" className="py-20 bg-[#faf8f5] scroll-mt-16 relative">
+      <div id="catalog" className="absolute -top-16 left-0" />
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         
         {/* Header Bersih (Tanpa Fitur Search & Filter Kategori) */}

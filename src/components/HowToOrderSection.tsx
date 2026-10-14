@@ -35,10 +35,15 @@ export const HowToOrderSection: React.FC = () => {
     },
   ];
 
-  const handleScrollToCatalog = () => {
-    const el = document.getElementById("catalog");
+  const handleScrollToCatalog = (e?: React.MouseEvent) => {
+    if (e) {
+      e.preventDefault();
+    }
+    const el = document.getElementById("katalog") || document.getElementById("catalog");
     if (el) {
       el.scrollIntoView({ behavior: "smooth" });
+    } else {
+      window.location.hash = "#katalog";
     }
   };
 
@@ -101,13 +106,14 @@ export const HowToOrderSection: React.FC = () => {
 
         {/* CTA Button */}
         <div className="mt-12 text-center">
-          <button
+          <a
+            href="#katalog"
             onClick={handleScrollToCatalog}
-            className="inline-flex items-center gap-2 px-8 py-3.5 rounded-full bg-amber-500 hover:bg-amber-600 text-white font-extrabold text-xs sm:text-sm uppercase tracking-wider shadow-lg shadow-amber-500/25 active:scale-95 transition-all"
+            className="inline-flex items-center gap-2 px-8 py-3.5 rounded-full bg-amber-500 hover:bg-amber-600 text-white font-extrabold text-xs sm:text-sm uppercase tracking-wider shadow-lg shadow-amber-500/25 active:scale-95 transition-all cursor-pointer"
           >
             <span>Mulai Pilih Menu Sekarang</span>
             <ArrowRight className="w-4 h-4" />
-          </button>
+          </a>
         </div>
 
       </div>
