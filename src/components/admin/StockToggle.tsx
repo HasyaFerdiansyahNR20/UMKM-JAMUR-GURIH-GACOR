@@ -87,6 +87,8 @@ export const StockToggle: React.FC<StockToggleProps> = ({ initialProducts, onSwi
                 <img
                   src={product.image_url}
                   alt={product.name}
+                  loading="lazy"
+                  decoding="async"
                   className="w-12 h-12 rounded-xl object-cover shrink-0"
                 />
                 <div className="min-w-0">

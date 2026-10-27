@@ -61,8 +61,10 @@ export const AboutSection: React.FC = () => {
             <div className="lg:col-span-5 flex flex-col items-center text-center">
               <div className="relative w-64 h-64 sm:w-72 sm:h-72 rounded-3xl overflow-hidden bg-gradient-to-br from-amber-100 via-amber-50 to-orange-100 p-4 border-2 border-amber-300 shadow-inner group">
                 <img
-                  src="/logo-gurih-gacor.jpg"
+                  src="/logo-gurih-gacor.webp"
                   alt="Logo Maskot Gurih Gacor"
+                  loading="lazy"
+                  decoding="async"
                   className="w-full h-full object-contain rounded-2xl transform group-hover:scale-105 transition-transform duration-300"
                 />
               </div>

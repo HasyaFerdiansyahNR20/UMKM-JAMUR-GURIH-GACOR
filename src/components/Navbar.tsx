@@ -51,8 +51,11 @@ export const Navbar: React.FC = () => {
           <Link href="/" className="flex items-center gap-3 group shrink-0">
             <div className="relative w-12 h-12 rounded-2xl overflow-hidden bg-amber-50 border-2 border-amber-300 shadow-md shadow-amber-500/10 group-hover:scale-105 transition-transform flex items-center justify-center">
               <img
-                src="/logo-gurih-gacor.jpg"
+                src="/logo-gurih-gacor.webp"
                 alt="Logo Gurih Gacor"
+                loading="eager"
+                fetchPriority="high"
+                decoding="async"
                 className="w-full h-full object-cover"
               />
             </div>

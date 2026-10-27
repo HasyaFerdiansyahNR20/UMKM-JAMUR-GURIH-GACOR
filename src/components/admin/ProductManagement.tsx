@@ -163,6 +163,8 @@ export const ProductManagement: React.FC<ProductManagementProps> = ({
                   <img
                     src={p.image_url}
                     alt={p.name}
+                    loading="lazy"
+                    decoding="async"
                     className="w-10 h-10 rounded-xl object-cover shrink-0"
                   />
                   <div>

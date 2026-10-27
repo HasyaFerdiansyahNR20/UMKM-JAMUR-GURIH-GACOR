@@ -35,6 +35,8 @@ export const PromoSlider: React.FC<PromoSliderProps> = ({ promotions }) => {
             <img
               src={promo.banner_url}
               alt={promo.title}
+              loading="lazy"
+              decoding="async"
               className="w-full h-full object-cover opacity-20 mix-blend-overlay"
             />
           </div>

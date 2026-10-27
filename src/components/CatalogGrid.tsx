@@ -128,6 +128,8 @@ export const CatalogGrid: React.FC<CatalogGridProps> = ({ products }) => {
                     <img
                       src={product.image_url}
                       alt={product.name}
+                      loading="lazy"
+                      decoding="async"
                       className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
                     />
 
@@ -223,6 +225,8 @@ export const CatalogGrid: React.FC<CatalogGridProps> = ({ products }) => {
                 <img
                   src={customizingProduct.image_url}
                   alt={customizingProduct.name}
+                  loading="lazy"
+                  decoding="async"
                   className="w-full h-full object-cover"
                 />
               </div>

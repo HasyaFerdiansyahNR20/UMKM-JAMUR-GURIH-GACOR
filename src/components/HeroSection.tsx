@@ -19,7 +19,7 @@ export const HeroSection: React.FC<HeroSectionProps> = ({ featuredProduct }) => 
     }
   };
 
-  const productImage = featuredProduct?.image_url || "/products/jamur-crispy-original.jpg";
+  const productImage = featuredProduct?.image_url || "/products/jamur-crispy-original.webp";
 
   return (
     <section
@@ -105,6 +105,9 @@ export const HeroSection: React.FC<HeroSectionProps> = ({ featuredProduct }) => 
                 <img
                   src={productImage}
                   alt="Jamur Crispy Original Gurih Gacor"
+                  loading="eager"
+                  fetchPriority="high"
+                  decoding="async"
                   className="w-full h-auto object-cover rounded-[30px] shadow-sm"
                 />
               </div>
@@ -156,8 +159,10 @@ export const HeroSection: React.FC<HeroSectionProps> = ({ featuredProduct }) => 
             <div className="inline-flex items-center gap-2.5 px-3.5 py-1.5 rounded-full bg-gradient-to-r from-orange-500 via-orange-600 to-amber-600 text-white shadow-md shadow-orange-500/25">
               <div className="w-5 h-5 rounded-full overflow-hidden bg-white/20 shrink-0 flex items-center justify-center">
                 <img
-                  src="/logo-gurih-gacor.jpg"
+                  src="/logo-gurih-gacor.webp"
                   alt="Maskot"
+                  loading="eager"
+                  decoding="async"
                   className="w-full h-full object-cover"
                 />
               </div>

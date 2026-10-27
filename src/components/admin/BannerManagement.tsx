@@ -116,6 +116,8 @@ export const BannerManagement: React.FC<BannerManagementProps> = ({ initialPromo
               <img
                 src={promo.banner_url}
                 alt={promo.title}
+                loading="lazy"
+                decoding="async"
                 className="w-full h-full object-cover opacity-60"
               />
               <div className="absolute top-3 left-3 bg-white/90 backdrop-blur px-2.5 py-1 rounded-full text-[10px] font-black uppercase text-amber-700">

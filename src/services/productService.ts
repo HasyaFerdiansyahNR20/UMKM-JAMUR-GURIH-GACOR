@@ -2,6 +2,18 @@ import { supabaseAdmin, supabase, FALLBACK_PRODUCTS, FALLBACK_CATEGORIES } from 
 import { Product, Category, AvailabilityStatus } from "@/types";
 import { getNextSequentialId } from "@/lib/idGenerator";
 
+/**
+ * Normalizes local static .jpg asset paths to compressed .webp versions
+ * so existing database records automatically benefit from WebP compression.
+ */
+function normalizeToWebp(url?: string | null): string {
+  if (!url) return "/products/jamur-crispy-original.webp";
+  if (url.startsWith("/") && /\.(jpg|jpeg)$/i.test(url)) {
+    return url.replace(/\.(jpg|jpeg)$/i, ".webp");
+  }
+  return url;
+}
+
 export const productService = {
   async getCategories(): Promise<Category[]> {
     try {
@@ -33,9 +45,10 @@ export const productService = {
         return FALLBACK_PRODUCTS;
       }
 
-      // Merge and ensure UI fallback properties
+      // Merge and ensure UI fallback properties + WebP image optimization
       const mapped = data.map((item: any, idx: number) => ({
         ...item,
+        image_url: normalizeToWebp(item.image_url),
         category: item.categories,
         card_theme: (idx % 3 === 0 ? "green" : idx % 3 === 1 ? "amber" : "olive") as "green" | "amber" | "olive",
         rating: item.rating || 4.8,

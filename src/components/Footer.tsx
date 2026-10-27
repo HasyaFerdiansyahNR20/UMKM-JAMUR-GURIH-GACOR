@@ -13,8 +13,10 @@ export const Footer: React.FC = () => {
         <div className="mb-8 flex flex-col items-center">
           <div className="w-16 h-16 rounded-2xl overflow-hidden bg-amber-50 p-1 border-2 border-amber-400 mb-3 shadow-lg">
             <img
-              src="/logo-gurih-gacor.jpg"
+              src="/logo-gurih-gacor.webp"
               alt="Logo Gurih Gacor"
+              loading="lazy"
+              decoding="async"
               className="w-full h-full object-cover rounded-xl"
             />
           </div>

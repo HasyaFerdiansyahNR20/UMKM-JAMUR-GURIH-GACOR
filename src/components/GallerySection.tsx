@@ -20,56 +20,56 @@ export const GallerySection: React.FC = () => {
       id: "gal-1",
       title: "Kemasan Standing Pouch Gurih Gacor",
       tag: "Kemasan Resmi",
-      image: "/gallery/kemasan-jamur-crispy-tiga-varian.jpg",
+      image: "/gallery/kemasan-jamur-crispy-tiga-varian.webp",
       description: "Tampilan kemasan premium ziplock 60gr siap santap, menjaga kerenyahan jamur tahan lama dan higienis.",
     },
     {
       id: "gal-2",
       title: "Tampak Depan Pouch Jamur Tiram Crispy",
       tag: "Kemasan Depan",
-      image: "/gallery/kemasan-depan-jamur-tiram-crispy.jpg",
+      image: "/gallery/kemasan-depan-jamur-tiram-crispy.webp",
       description: "Desain kemasan depan resmi dengan maskot Gurih Gacor, sertifikasi Halal Indonesia, dan pilihan varian rasa favorit.",
     },
     {
       id: "gal-3",
       title: "Informasi Komposisi & Cara Penyimpanan",
       tag: "Kemasan Belakang",
-      image: "/gallery/kemasan-belakang-informasi-produk.jpg",
+      image: "/gallery/kemasan-belakang-informasi-produk.webp",
       description: "Keterangan komposisi alami jamur tiram, anjuran simpan di tempat sejuk & kering, serta tanggal kedaluwarsa.",
     },
     {
       id: "gal-4",
       title: "Jamur Crispy Original",
       tag: "Menu Favorit",
-      image: "/products/jamur-crispy-original.jpg",
+      image: "/products/jamur-crispy-original.webp",
       description: "Jamur crispy original renyah keemasan dengan racikan 7 rempah Nusantara khas Gurih Gacor.",
     },
     {
       id: "gal-5",
       title: "Jamur Crispy Pedas",
       tag: "Varian Pedas",
-      image: "/products/jamur-crispy-pedas.jpg",
+      image: "/products/jamur-crispy-pedas.webp",
       description: "Sensasi gurih renyah jamur berbalut taburan bumbu cabai pedas nikmat yang meresap sempurna.",
     },
     {
       id: "gal-6",
       title: "Jamur Crispy Manis",
       tag: "Varian Manis",
-      image: "/products/jamur-crispy-manis.jpg",
+      image: "/products/jamur-crispy-manis.webp",
       description: "Varian jamur crispy renyah dengan taburan bumbu manis gurih spesial yang legit dan nagih.",
     },
     {
       id: "gal-7",
       title: "Pedas Manis",
       tag: "Varian Best Seller",
-      image: "/products/jamur-crispy-pedas-manis.jpg",
+      image: "/products/jamur-crispy-pedas-manis.webp",
       description: "Perpaduan rasa pedas nendang dan manis gurih berpadu seimbang di atas jamur renyah.",
     },
     {
       id: "gal-8",
       title: "Maskot Resmi Gurih Gacor",
       tag: "Identitas Brand",
-      image: "/logo-gurih-gacor.jpg",
+      image: "/logo-gurih-gacor.webp",
       description: "Karakter maskot jamur bertopi koki sayap emas yang melambangkan kelezatan dan keramahan UMKM Gurih Gacor.",
     },
   ];
@@ -104,6 +104,8 @@ export const GallerySection: React.FC = () => {
                 <img
                   src={item.image}
                   alt={item.title}
+                  loading="lazy"
+                  decoding="async"
                   className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
                 />
                 
@@ -149,6 +151,8 @@ export const GallerySection: React.FC = () => {
               <img
                 src={selectedPhoto.image}
                 alt={selectedPhoto.title}
+                loading="lazy"
+                decoding="async"
                 className="w-full h-full object-contain bg-stone-950"
               />
             </div>
