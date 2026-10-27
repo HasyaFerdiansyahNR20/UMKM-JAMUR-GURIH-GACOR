@@ -61,18 +61,16 @@ export const CatalogGrid: React.FC<CatalogGridProps> = ({ products }) => {
     if (!customizingProduct) return;
     
     const sizeLabel = selectedSize.label.replace(/Large\s*\/\s*Reguler/gi, "Large");
-    const formattedNotes = [
-      `Ukuran: ${sizeLabel} (${formatRupiahShort(selectedSize.price)})`,
-      itemNotes ? `Catatan: ${itemNotes}` : "",
-    ].filter(Boolean).join(" | ");
+    const sizeOptionTag = `Ukuran ${sizeLabel}`;
+    const trimmedNotes = itemNotes.trim();
 
     const adjustedProduct = {
       ...customizingProduct,
       price: currentUnitPrice,
     };
 
-    addItem(adjustedProduct, itemQuantity, undefined, [], formattedNotes);
-    showToast(`"${customizingProduct.name}" (${sizeLabel}) berhasil ditambahkan ke keranjang! 🛒`);
+    addItem(adjustedProduct, itemQuantity, sizeOptionTag, [], trimmedNotes);
+    showToast(`"${customizingProduct.name}" (${sizeLabel} - ${formatRupiahShort(currentUnitPrice)}) berhasil ditambahkan ke keranjang! 🛒`);
     setCustomizingProduct(null);
   };
 

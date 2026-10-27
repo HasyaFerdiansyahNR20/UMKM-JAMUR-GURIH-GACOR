@@ -161,76 +161,109 @@ export const CartDrawer: React.FC = () => {
                 </p>
               </div>
             ) : (
-              items.map((item, idx) => (
-                <div
-                  key={`${item.product.id}-${idx}`}
-                  className="bg-stone-50 rounded-2xl p-4 border border-stone-200 flex gap-3 relative group"
-                >
-                  <img
-                    src={item.product.image_url}
-                    alt={item.product.name}
-                    loading="lazy"
-                    decoding="async"
-                    className="w-16 h-16 rounded-xl object-cover shrink-0"
-                  />
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-start justify-between gap-1">
-                      <h4 className="font-extrabold text-xs text-stone-900 truncate">
-                        {item.product.name}
-                      </h4>
-                      <button
-                        onClick={() => removeItem(item.product.id, item.selectedSambal)}
-                        className="text-stone-400 hover:text-red-500 transition-colors p-1"
-                        aria-label="Hapus item"
-                      >
-                        <Trash2 className="w-3.5 h-3.5" />
-                      </button>
-                    </div>
+              items.map((item, idx) => {
+                const sizeBadgeText = item.selectedSambal
+                  ? item.selectedSambal.replace(/^Ukuran\s*/i, "")
+                  : "";
 
-                    {/* Options list */}
-                    {item.selectedSambal && (
-                      <p className="text-[11px] text-amber-700 font-medium">
-                        🌶️ {item.selectedSambal}
-                      </p>
-                    )}
-                    {item.selectedAddons && item.selectedAddons.length > 0 && (
-                      <p className="text-[10px] text-stone-500 truncate">
-                        + {item.selectedAddons.map((a) => a.name).join(", ")}
-                      </p>
-                    )}
-                    {item.notes && (
-                      <p className="text-[10px] text-stone-400 italic truncate">
-                        Catatan: {item.notes}
-                      </p>
-                    )}
-
-                    {/* Price and Quantity Controls */}
-                    <div className="flex items-center justify-between mt-3 pt-2 border-t border-stone-200/80">
-                      <span className="font-black text-xs text-stone-900">
-                        {formatRupiahShort(item.itemTotal * item.quantity)}
-                      </span>
-
-                      <div className="flex items-center gap-2">
+                return (
+                  <div
+                    key={`${item.product.id}-${item.selectedSambal || ""}-${item.itemTotal}-${idx}`}
+                    className="bg-stone-50 rounded-2xl p-4 border border-stone-200 flex gap-3 relative group"
+                  >
+                    <img
+                      src={item.product.image_url}
+                      alt={item.product.name}
+                      loading="lazy"
+                      decoding="async"
+                      className="w-16 h-16 rounded-xl object-cover shrink-0"
+                    />
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-start justify-between gap-1">
+                        <div>
+                          <h4 className="font-extrabold text-xs text-stone-900 leading-snug">
+                            {item.product.name}
+                            {sizeBadgeText ? (
+                              <span className="ml-1.5 inline-block px-2 py-0.5 rounded-md bg-amber-100 text-amber-800 text-[10px] font-black uppercase tracking-wide">
+                                {sizeBadgeText}
+                              </span>
+                            ) : null}
+                          </h4>
+                          <p className="text-[11px] text-stone-500 font-semibold mt-0.5">
+                            Harga Satuan: {formatRupiahShort(item.itemTotal)}
+                          </p>
+                        </div>
                         <button
-                          onClick={() => updateQuantity(item.product.id, item.quantity - 1, item.selectedSambal)}
-                          className="w-6 h-6 rounded-full bg-white border border-stone-300 text-stone-700 flex items-center justify-center hover:bg-stone-100"
+                          onClick={() =>
+                            removeItem(
+                              item.product.id,
+                              item.selectedSambal,
+                              item.notes,
+                              item.itemTotal
+                            )
+                          }
+                          className="text-stone-400 hover:text-red-500 transition-colors p-1 shrink-0"
+                          aria-label="Hapus item"
                         >
-                          <Minus className="w-3 h-3" />
+                          <Trash2 className="w-3.5 h-3.5" />
                         </button>
-                        <span className="text-xs font-bold text-stone-900 min-w-4 text-center">
-                          {item.quantity}
+                      </div>
+
+                      {item.selectedAddons && item.selectedAddons.length > 0 && (
+                        <p className="text-[10px] text-stone-500 truncate mt-1">
+                          + {item.selectedAddons.map((a) => a.name).join(", ")}
+                        </p>
+                      )}
+                      {item.notes && (
+                        <p className="text-[10px] text-stone-500 italic truncate mt-1">
+                          Catatan: {item.notes}
+                        </p>
+                      )}
+
+                      {/* Price and Quantity Controls */}
+                      <div className="flex items-center justify-between mt-3 pt-2 border-t border-stone-200/80">
+                        <span className="font-black text-xs text-stone-900">
+                          {formatRupiahShort(item.itemTotal * item.quantity)}
                         </span>
-                        <button
-                          onClick={() => updateQuantity(item.product.id, item.quantity + 1, item.selectedSambal)}
-                          className="w-6 h-6 rounded-full bg-white border border-stone-300 text-stone-700 flex items-center justify-center hover:bg-stone-100"
-                        >
-                          <Plus className="w-3 h-3" />
-                        </button>
+
+                        <div className="flex items-center gap-2">
+                          <button
+                            onClick={() =>
+                              updateQuantity(
+                                item.product.id,
+                                item.quantity - 1,
+                                item.selectedSambal,
+                                item.notes,
+                                item.itemTotal
+                              )
+                            }
+                            className="w-6 h-6 rounded-full bg-white border border-stone-300 text-stone-700 flex items-center justify-center hover:bg-stone-100"
+                          >
+                            <Minus className="w-3 h-3" />
+                          </button>
+                          <span className="text-xs font-bold text-stone-900 min-w-4 text-center">
+                            {item.quantity}
+                          </span>
+                          <button
+                            onClick={() =>
+                              updateQuantity(
+                                item.product.id,
+                                item.quantity + 1,
+                                item.selectedSambal,
+                                item.notes,
+                                item.itemTotal
+                              )
+                            }
+                            className="w-6 h-6 rounded-full bg-white border border-stone-300 text-stone-700 flex items-center justify-center hover:bg-stone-100"
+                          >
+                            <Plus className="w-3 h-3" />
+                          </button>
+                        </div>
                       </div>
                     </div>
                   </div>
-                </div>
-              ))
+                );
+              })
             )}
           </div>
 

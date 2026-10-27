@@ -49,12 +49,9 @@ export function formatWhatsAppMessage(data: WhatsAppOrderData): string {
 
   data.items.forEach((item, index) => {
     const itemSubtotal = item.itemTotal * item.quantity;
-    text += `${index + 1}. *${item.product.name}* (x${item.quantity})\n`;
+    const sizeInfo = item.selectedSambal ? ` — ${cleanSizeText(item.selectedSambal)}` : "";
+    text += `${index + 1}. *${item.product.name}${sizeInfo}* (x${item.quantity})\n`;
     text += `   💰 @${formatRupiahShort(item.itemTotal)} = *${formatRupiahShort(itemSubtotal)}*\n`;
-    
-    if (item.selectedSambal) {
-      text += `   🌶️ Sambal: ${item.selectedSambal}\n`;
-    }
     
     if (item.selectedAddons && item.selectedAddons.length > 0) {
       const addonNames = item.selectedAddons.map(a => `${a.name} (+${formatRupiahShort(a.price)})`).join(", ");
