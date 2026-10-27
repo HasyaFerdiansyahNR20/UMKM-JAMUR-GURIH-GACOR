@@ -27,13 +27,13 @@ export default async function HomePage() {
   const heroProduct =
     products.find((p) => p.is_bestseller) || products[0] || {
       id: "hero-default",
-      name: "Jamur Crispy Gurih Gacor Signature",
-      description: "Jamur tiram & enoki segar pilihan dibalut tepung rempah rahasia 7 bumbu khas Nusantara, digoreng garing keemasan. Super renyah di luar, lembut di dalam. KRIUK-KRIUK NYA BIKIN NGILER!",
-      price: 18000,
-      original_price: 22000,
-      image_url: "https://images.unsplash.com/photo-1546069901-ba9599a7e63c?auto=format&fit=crop&w=1000&q=80",
+      name: "Jamur Crispy Original",
+      description: "Jamur tiram segar pilihan dibalut tepung rempah rahasia 7 bumbu khas Nusantara, digoreng garing keemasan. Super renyah di luar, lembut di dalam. KRIUK-KRIUK NYA BIKIN NGILER!",
+      price: 5000,
+      original_price: null,
+      image_url: "/products/jamur-crispy-original.webp",
       availability_status: "available",
-      rating: 4.8,
+      rating: 4.9,
       review_count: 521,
     };
 

@@ -5,20 +5,20 @@ import { AppShell } from "@/components/AppShell";
 export const metadata: Metadata = {
   title: "UMKM Gurih Gacor — Kriuk-Kriuk Nya Bikin Ngiler!",
   description:
-    "Website Resmi Katalog Kuliner UMKM Gurih Gacor. Sajian jamur crispy gurih, ayam geprek sambal ulek, dan paket hemat renyah dengan alur Direct WhatsApp Order cepat dan praktis.",
+    "Website Resmi Katalog Kuliner UMKM Gurih Gacor. Sajian jamur tiram crispy gurih renyah bumbu 7 rempah Nusantara dalam varian Original, Pedas, Manis, dan Pedas Manis.",
   keywords: [
     "UMKM Gurih Gacor",
     "Jamur Crispy",
-    "Ayam Geprek",
-    "Kulit Crispy",
-    "Kuliner Cepat Saji",
+    "Jamur Tiram Crispy",
+    "Camilan Jamur Renyah",
+    "Kuliner Nusantara",
     "Katalog Makanan WhatsApp",
     "Kriuk-Kriuk Nya Bikin Ngiler",
   ],
   authors: [{ name: "UMKM Gurih Gacor" }],
   openGraph: {
     title: "UMKM Gurih Gacor — Kriuk-Kriuk Nya Bikin Ngiler!",
-    description: "Katalog menu jamur crispy & ayam geprek gurih renyah nusantara. Pesan langsung via WhatsApp!",
+    description: "Katalog menu jamur tiram crispy gurih renyah Nusantara mulai 5 ribuan. Pesan langsung via WhatsApp!",
     type: "website",
     locale: "id_ID",
   },

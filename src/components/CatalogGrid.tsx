@@ -168,7 +168,7 @@ export const CatalogGrid: React.FC<CatalogGridProps> = ({ products }) => {
                       <div className="flex items-baseline gap-1">
                         <span className="text-xs font-semibold text-stone-500">Mulai</span>
                         <span className="text-lg font-black text-amber-600">
-                          Rp 5.000
+                          {formatRupiahShort(product.price || 5000)}
                         </span>
                         <span className="text-[11px] text-stone-400 font-medium">/ Small</span>
                       </div>

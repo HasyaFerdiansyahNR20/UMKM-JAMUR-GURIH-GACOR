@@ -38,11 +38,11 @@ export const ProductManagement: React.FC<ProductManagementProps> = ({
     setName("");
     setDescription("");
     setCategoryId(categories[0]?.id || "");
-    setPrice(18000);
-    setOriginalPrice(22000);
-    setImageUrl("https://images.unsplash.com/photo-1546069901-ba9599a7e63c?auto=format&fit=crop&w=800&q=80");
+    setPrice(5000);
+    setOriginalPrice(undefined);
+    setImageUrl("/products/jamur-crispy-original.webp");
     setAvailabilityStatus("available");
-    setSpicyLevel(2);
+    setSpicyLevel(0);
     setIsBestseller(false);
     setIsPromo(false);
     setIsModalOpen(true);
