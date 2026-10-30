@@ -53,9 +53,9 @@ export const StockToggle: React.FC<StockToggleProps> = ({ initialProducts, onSwi
           <h3 className="text-lg font-black text-stone-900">
             Manual Toggle Ketersediaan Stok
           </h3>
-          <p className="text-xs text-stone-500 mt-0.5">
-            Klik toggle untuk mengubah status menu antara &ldquo;Tersedia&rdquo; atau &ldquo;Habis&rdquo; secara real-time.
-          </p>
+
+
+
         </div>
 
         {onSwitchToProducts && (
