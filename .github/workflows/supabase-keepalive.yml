@@ -1,0 +1,18 @@
+name: Supabase Keep-Alive Ping
+
+on:
+  schedule:
+    # Runs at 03:30 UTC (10:30 WIB) every 3 days to prevent Supabase 7-day inactivity pause
+    - cron: "30 3 */3 * *"
+  workflow_dispatch:
+
+jobs:
+  ping-supabase:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Ping Vercel Keep-Alive Endpoint
+        run: |
+          echo "Pinging UMKM Gurih Gacor Supabase Keep-Alive endpoint..."
+          curl -sS --fail --max-time 30 "https://umkm-jamur-gurih-gacor.vercel.app/api/keep-alive"
+          echo ""
+          echo "Keep-alive ping completed successfully."
