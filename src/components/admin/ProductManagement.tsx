@@ -198,11 +198,8 @@ export const ProductManagement: React.FC<ProductManagementProps> = ({
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
         <div>
           <h3 className="text-lg font-black text-stone-900">
-            Manajemen Produk &amp; Harga (CRUD)
+            Manajemen Produk
           </h3>
-          <p className="text-xs text-stone-500 mt-0.5">
-            Tambah menu baru, unggah foto produk otomatis ringan (WebP), dan atur harga
-          </p>
         </div>
 
         <button
