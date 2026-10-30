@@ -80,7 +80,7 @@ export default async function HomePage() {
       <WavyDivider />
 
       {/* 3 HIGHLIGHTED FAVORITE DISHES */}
-      <MenuCardsRow products={highlightedProducts.length >= 3 ? highlightedProducts : products} />
+      <MenuCardsRow products={products} />
 
       {/* PROMO BANNER SLIDER */}
       <PromoSlider promotions={promotions} />

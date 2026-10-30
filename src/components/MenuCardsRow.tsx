@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useRef } from "react";
+import React, { useState } from "react";
 import { Star, ChevronLeft, ChevronRight, ShoppingBag } from "lucide-react";
 import { Product } from "@/types";
 
@@ -35,7 +35,7 @@ const CARD_THEMES = [
 ];
 
 export const MenuCardsRow: React.FC<MenuCardsRowProps> = ({ products }) => {
-  const scrollContainerRef = useRef<HTMLDivElement>(null);
+  const [activeIndex, setActiveIndex] = useState(0);
 
   const handleScrollToCatalog = (e?: React.MouseEvent) => {
     if (e) e.preventDefault();
@@ -47,22 +47,24 @@ export const MenuCardsRow: React.FC<MenuCardsRowProps> = ({ products }) => {
     }
   };
 
+  const total = products.length;
+
   const scroll = (direction: "left" | "right") => {
-    if (scrollContainerRef.current) {
-      const scrollAmount = 380;
-      scrollContainerRef.current.scrollBy({
-        left: direction === "left" ? -scrollAmount : scrollAmount,
-        behavior: "smooth",
-      });
-    }
+    if (total <= 1) return;
+    setActiveIndex((prev) =>
+      direction === "right" ? (prev + 1) % total : (prev - 1 + total) % total
+    );
   };
 
-  // Curate the 3 primary cards to display
-  const displayItems = products.slice(0, 3);
+  // Curate 3 cards starting from activeIndex cyclically so arrows always rotate smoothly
+  const visibleCount = Math.min(3, total);
+  const displayItems = Array.from({ length: visibleCount }, (_, offset) => {
+    const idx = (activeIndex + offset) % total;
+    return { product: products[idx], idx };
+  });
 
   return (
     <section className="relative bg-[#faf5ee] pt-8 pb-20 px-4 sm:px-6 lg:px-8 overflow-hidden">
-      
       {/* 1. Latar Belakang Doodle Garis Halus (Jamur, Cabai, Daun Rempah) */}
       <div className="absolute inset-0 pointer-events-none select-none z-0 overflow-hidden">
         <svg
@@ -118,7 +120,6 @@ export const MenuCardsRow: React.FC<MenuCardsRowProps> = ({ products }) => {
       </div>
 
       <div className="max-w-7xl mx-auto relative z-10">
-        
         {/* 2. Subtitle Tagline Bersih Sesuai Gambar Acuan */}
         <div className="text-center mb-12 sm:mb-16">
           <p className="text-stone-800 text-sm sm:text-base font-bold tracking-tight">
@@ -128,12 +129,11 @@ export const MenuCardsRow: React.FC<MenuCardsRowProps> = ({ products }) => {
 
         {/* 3. Carousel Wrapper dengan Navigasi Panah Kiri & Kanan */}
         <div className="relative">
-          
           {/* Tombol Panah Kiri (<) */}
           <button
             type="button"
             onClick={() => scroll("left")}
-            className="hidden lg:flex absolute -left-5 top-1/2 -translate-y-1/2 z-30 w-11 h-11 rounded-full bg-white/95 hover:bg-white text-stone-800 border border-stone-200/80 items-center justify-center shadow-xl hover:scale-105 active:scale-95 transition-all cursor-pointer"
+            className="flex absolute -left-2 sm:-left-5 top-1/2 -translate-y-1/2 z-30 w-11 h-11 rounded-full bg-white/95 hover:bg-white text-stone-800 border border-stone-200/80 items-center justify-center shadow-xl hover:scale-105 active:scale-95 transition-all cursor-pointer"
             aria-label="Geser ke kiri"
           >
             <ChevronLeft className="w-6 h-6" />
@@ -143,24 +143,22 @@ export const MenuCardsRow: React.FC<MenuCardsRowProps> = ({ products }) => {
           <button
             type="button"
             onClick={() => scroll("right")}
-            className="hidden lg:flex absolute -right-5 top-1/2 -translate-y-1/2 z-30 w-11 h-11 rounded-full bg-white/95 hover:bg-white text-stone-800 border border-stone-200/80 items-center justify-center shadow-xl hover:scale-105 active:scale-95 transition-all cursor-pointer"
+            className="flex absolute -right-2 sm:-right-5 top-1/2 -translate-y-1/2 z-30 w-11 h-11 rounded-full bg-white/95 hover:bg-white text-stone-800 border border-stone-200/80 items-center justify-center shadow-xl hover:scale-105 active:scale-95 transition-all cursor-pointer"
             aria-label="Geser ke kanan"
           >
             <ChevronRight className="w-6 h-6" />
           </button>
 
           {/* Cards Grid Container */}
-          <div
-            ref={scrollContainerRef}
-            className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-14 lg:gap-8 pt-16 pb-8 overflow-x-auto no-scrollbar"
-          >
-            {displayItems.map((product, idx) => {
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-14 lg:gap-8 pt-16 pb-8">
+            {displayItems.map(({ product, idx }) => {
               const theme = CARD_THEMES[idx % CARD_THEMES.length];
-              
-              // Extract Name Parts
+
+              // Extract Name Parts cleanly
               const nameParts = product.name.split(" ");
-              const prefix = nameParts[0] || "Jamur";
-              const title = nameParts.slice(1).join(" ") || "Crispy";
+              const startsWithJamur = product.name.toLowerCase().startsWith("jamur");
+              const prefix = startsWithJamur ? nameParts[0] || "Jamur" : "Jamur Crispy";
+              const title = startsWithJamur ? nameParts.slice(1).join(" ") || "Crispy" : product.name;
 
               // Unique ingredient visuals per card
               const isOriginal = idx === 0 || product.name.toLowerCase().includes("original");
@@ -168,13 +166,11 @@ export const MenuCardsRow: React.FC<MenuCardsRowProps> = ({ products }) => {
               const isManis = idx === 2 || product.name.toLowerCase().includes("manis");
 
               return (
-                <div key={product.id} className="relative pt-12 flex justify-center group">
-                  
+                <div key={`${product.id}-${idx}`} className="relative pt-12 flex justify-center group animate-fadeIn">
                   {/* The Gradient Card Container */}
                   <div
                     className={`${theme.gradient} w-full max-w-sm rounded-[32px] pt-24 pb-8 px-6 text-white shadow-2xl ${theme.shadow} hover:shadow-2xl hover:-translate-y-1 transition-all duration-300 relative flex flex-col justify-between`}
                   >
-                    
                     {/* Floating Plate Visual (Melayang Menembus Atas Kartu) */}
                     <div
                       onClick={handleScrollToCatalog}
@@ -182,7 +178,6 @@ export const MenuCardsRow: React.FC<MenuCardsRowProps> = ({ products }) => {
                       title="Klik untuk memilih ukuran & pesan"
                     >
                       <div className="relative">
-                        
                         {/* Piring Makanan Oval Putih dengan Bayangan Lembut */}
                         <div className="relative rounded-[28px] overflow-hidden bg-white/30 p-1.5 border border-white/60 shadow-xl shadow-stone-950/30">
                           <img
@@ -227,7 +222,6 @@ export const MenuCardsRow: React.FC<MenuCardsRowProps> = ({ products }) => {
                         {isManis && (
                           <span className="absolute -top-3 left-4 text-xs select-none">✨</span>
                         )}
-
                       </div>
                     </div>
 
@@ -272,15 +266,31 @@ export const MenuCardsRow: React.FC<MenuCardsRowProps> = ({ products }) => {
                         <span>ORDER NOW</span>
                       </a>
                     </div>
-
                   </div>
                 </div>
               );
             })}
           </div>
 
+          {/* Pagination Dots Indicator */}
+          {total > 1 && (
+            <div className="flex items-center justify-center gap-2 mt-2">
+              {products.map((p, i) => (
+                <button
+                  key={p.id}
+                  type="button"
+                  onClick={() => setActiveIndex(i)}
+                  className={`h-2.5 rounded-full transition-all cursor-pointer ${
+                    i === activeIndex
+                      ? "w-7 bg-amber-600"
+                      : "w-2.5 bg-amber-900/20 hover:bg-amber-900/40"
+                  }`}
+                  aria-label={`Tampilkan menu ${p.name}`}
+                />
+              ))}
+            </div>
+          )}
         </div>
-
       </div>
     </section>
   );
