@@ -138,13 +138,13 @@ export const ContactSection: React.FC = () => {
               </span>
               <div className="flex flex-wrap gap-3">
                 <a
-                  href="https://instagram.com"
+                  href="https://www.instagram.com/gurih.gacor/"
                   target="_blank"
                   rel="noopener noreferrer"
                   className="flex items-center gap-2 px-4 py-2 rounded-2xl bg-gradient-to-r from-purple-50 to-pink-50 border border-pink-200 text-pink-700 text-xs font-extrabold hover:shadow-sm transition-all"
                 >
                   <Instagram className="w-4 h-4" />
-                  <span>@gurihgacor.id</span>
+                  <span>@gurih.gacor</span>
                 </a>
                 <a
                   href="https://tiktok.com"

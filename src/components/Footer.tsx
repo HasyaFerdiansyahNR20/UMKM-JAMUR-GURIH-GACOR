@@ -62,11 +62,11 @@ export const Footer: React.FC = () => {
             <Phone className="w-4 h-4" />
           </a>
           <a
-            href="https://instagram.com"
+            href="https://www.instagram.com/gurih.gacor/"
             target="_blank"
             rel="noopener noreferrer"
             className="w-10 h-10 rounded-full bg-stone-800 hover:bg-pink-600 text-white flex items-center justify-center transition-colors shadow border border-stone-700"
-            aria-label="Instagram"
+            aria-label="Instagram @gurih.gacor"
           >
             <Instagram className="w-4 h-4" />
           </a>
