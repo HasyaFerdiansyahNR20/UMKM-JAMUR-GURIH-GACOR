@@ -1,13 +1,17 @@
 "use client";
 
 import React, { useState } from "react";
-import { Flame, ShoppingBag, Plus, Star, Check, MessageCircle, X } from "lucide-react";
+import { Flame, ShoppingBag, Plus, Star, Check, MessageCircle, Send, X } from "lucide-react";
 import { Product, Category } from "@/types";
 import { formatRupiahShort } from "@/lib/utils";
 import { useCart } from "@/hooks/useCart";
 import { Modal } from "@/components/ui/Modal";
 import { Badge } from "@/components/ui/Badge";
-import { generateDirectProductWhatsAppUrl } from "@/lib/whatsapp";
+import {
+  formatDirectProductMessage,
+  generateDirectProductWhatsAppUrl,
+  generateDirectProductTelegramUrl,
+} from "@/lib/whatsapp";
 
 interface CatalogGridProps {
   products: Product[];
@@ -27,7 +31,7 @@ const SIZE_OPTIONS: SizeOption[] = [
 ];
 
 export const CatalogGrid: React.FC<CatalogGridProps> = ({ products }) => {
-  const { addItem } = useCart();
+  const { addItem, productDrafts, setProductDraft, clearProductDraft } = useCart();
 
   // Selected product for customization modal (Detail Produk)
   const [customizingProduct, setCustomizingProduct] = useState<Product | null>(null);
@@ -46,10 +50,28 @@ export const CatalogGrid: React.FC<CatalogGridProps> = ({ products }) => {
   };
 
   const handleOpenCustomize = (product: Product) => {
+    const savedDraft = productDrafts[product.id];
+    const matchedSize = savedDraft
+      ? SIZE_OPTIONS.find((opt) => opt.label === savedDraft.sizeLabel) || SIZE_OPTIONS[0]
+      : SIZE_OPTIONS[0];
+
     setCustomizingProduct(product);
-    setSelectedSize(SIZE_OPTIONS[0]);
-    setItemNotes("");
-    setItemQuantity(1);
+    setSelectedSize(matchedSize);
+    setItemNotes(savedDraft?.notes ?? "");
+    setItemQuantity(savedDraft?.quantity && savedDraft.quantity >= 1 ? savedDraft.quantity : 1);
+  };
+
+  const updateCurrentDraft = (
+    productId: string,
+    nextSizeLabel: string,
+    nextQuantity: number,
+    nextNotes: string
+  ) => {
+    setProductDraft(productId, {
+      sizeLabel: nextSizeLabel,
+      quantity: nextQuantity,
+      notes: nextNotes,
+    });
   };
 
   // Unit price per porsi murni sesuai pilihan ukuran (Small 5k, Medium 10k, Large 15k)
@@ -70,24 +92,80 @@ export const CatalogGrid: React.FC<CatalogGridProps> = ({ products }) => {
     };
 
     addItem(adjustedProduct, itemQuantity, sizeOptionTag, [], trimmedNotes);
+    clearProductDraft(customizingProduct.id);
     showToast(`"${customizingProduct.name}" (${sizeLabel} - ${formatRupiahShort(currentUnitPrice)}) berhasil ditambahkan ke keranjang! 🛒`);
     setCustomizingProduct(null);
   };
 
   // Aksi: Pesan Langsung via WhatsApp
-  const handleDirectWhatsAppOrder = () => {
+  const handleDirectWhatsAppOrder = async () => {
     if (!customizingProduct) return;
 
     const sizeLabel = selectedSize.label.replace(/Large\s*\/\s*Reguler/gi, "Large");
-    const waUrl = generateDirectProductWhatsAppUrl({
+    const sizeOptionTag = `Ukuran ${sizeLabel}`;
+    const trimmedNotes = itemNotes.trim();
+
+    // Save item to cart as well so if WhatsApp accidentally closes, the order is not lost!
+    addItem(
+      { ...customizingProduct, price: currentUnitPrice },
+      itemQuantity,
+      sizeOptionTag,
+      [],
+      trimmedNotes
+    );
+
+    const directParams = {
       productName: customizingProduct.name,
       price: selectedSize.price,
       quantity: itemQuantity,
       sizeWeight: `Ukuran ${sizeLabel} (${formatRupiahShort(selectedSize.price)})`,
-      notes: itemNotes || undefined,
-    });
+      notes: trimmedNotes || undefined,
+    };
 
-    window.open(waUrl, "_blank");
+    const waUrl = generateDirectProductWhatsAppUrl(directParams);
+    try {
+      await navigator.clipboard?.writeText(formatDirectProductMessage(directParams));
+    } catch {
+      // Ignore clipboard error
+    }
+
+    window.open(waUrl, "_blank", "noopener,noreferrer");
+    setCustomizingProduct(null);
+  };
+
+  // Aksi: Pesan Langsung via Telegram Bot (@GurihGacorBot)
+  const handleDirectTelegramOrder = async () => {
+    if (!customizingProduct) return;
+
+    const sizeLabel = selectedSize.label.replace(/Large\s*\/\s*Reguler/gi, "Large");
+    const sizeOptionTag = `Ukuran ${sizeLabel}`;
+    const trimmedNotes = itemNotes.trim();
+
+    // Save item to cart as well so if Telegram accidentally closes, the order is not lost!
+    addItem(
+      { ...customizingProduct, price: currentUnitPrice },
+      itemQuantity,
+      sizeOptionTag,
+      [],
+      trimmedNotes
+    );
+
+    const directParams = {
+      productName: customizingProduct.name,
+      price: selectedSize.price,
+      quantity: itemQuantity,
+      sizeWeight: `Ukuran ${sizeLabel} (${formatRupiahShort(selectedSize.price)})`,
+      notes: trimmedNotes || undefined,
+    };
+
+    const tgUrl = generateDirectProductTelegramUrl(directParams);
+    try {
+      await navigator.clipboard?.writeText(formatDirectProductMessage(directParams));
+    } catch {
+      // Ignore clipboard error
+    }
+
+    window.open(tgUrl, "_blank", "noopener,noreferrer");
     setCustomizingProduct(null);
   };
 
@@ -126,6 +204,8 @@ export const CatalogGrid: React.FC<CatalogGridProps> = ({ products }) => {
                     <img
                       src={product.image_url}
                       alt={product.name}
+                      width={400}
+                      height={224}
                       loading="lazy"
                       decoding="async"
                       className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
@@ -223,6 +303,8 @@ export const CatalogGrid: React.FC<CatalogGridProps> = ({ products }) => {
                 <img
                   src={customizingProduct.image_url}
                   alt={customizingProduct.name}
+                  width={112}
+                  height={112}
                   loading="lazy"
                   decoding="async"
                   className="w-full h-full object-cover"
@@ -273,7 +355,10 @@ export const CatalogGrid: React.FC<CatalogGridProps> = ({ products }) => {
                   <button
                     key={opt.label}
                     type="button"
-                    onClick={() => setSelectedSize(opt)}
+                    onClick={() => {
+                      setSelectedSize(opt);
+                      updateCurrentDraft(customizingProduct.id, opt.label, itemQuantity, itemNotes);
+                    }}
                     className={`p-4 rounded-2xl border text-left transition-all ${
                       selectedSize.label === opt.label
                         ? "border-amber-500 bg-amber-50 text-amber-950 ring-2 ring-amber-500/20 shadow-sm"
@@ -305,7 +390,11 @@ export const CatalogGrid: React.FC<CatalogGridProps> = ({ products }) => {
               <input
                 type="text"
                 value={itemNotes}
-                onChange={(e) => setItemNotes(e.target.value)}
+                onChange={(e) => {
+                  const val = e.target.value;
+                  setItemNotes(val);
+                  updateCurrentDraft(customizingProduct.id, selectedSize.label, itemQuantity, val);
+                }}
                 placeholder="Contoh: Goreng agak kering, sambal jangan terlalu asin..."
                 className="w-full px-4 py-2.5 rounded-xl border border-stone-300 text-xs focus:outline-none focus:ring-2 focus:ring-amber-500 bg-white"
               />
@@ -317,7 +406,11 @@ export const CatalogGrid: React.FC<CatalogGridProps> = ({ products }) => {
               <div className="flex items-center gap-3">
                 <button
                   type="button"
-                  onClick={() => setItemQuantity(Math.max(1, itemQuantity - 1))}
+                  onClick={() => {
+                    const nextQty = Math.max(1, itemQuantity - 1);
+                    setItemQuantity(nextQty);
+                    updateCurrentDraft(customizingProduct.id, selectedSize.label, nextQty, itemNotes);
+                  }}
                   className="w-9 h-9 rounded-full border border-stone-300 text-stone-700 font-bold flex items-center justify-center hover:bg-stone-100 transition-colors"
                 >
                   -
@@ -327,7 +420,11 @@ export const CatalogGrid: React.FC<CatalogGridProps> = ({ products }) => {
                 </span>
                 <button
                   type="button"
-                  onClick={() => setItemQuantity(itemQuantity + 1)}
+                  onClick={() => {
+                    const nextQty = itemQuantity + 1;
+                    setItemQuantity(nextQty);
+                    updateCurrentDraft(customizingProduct.id, selectedSize.label, nextQty, itemNotes);
+                  }}
                   className="w-9 h-9 rounded-full border border-stone-300 text-stone-700 font-bold flex items-center justify-center hover:bg-stone-100 transition-colors"
                 >
                   +
@@ -335,21 +432,35 @@ export const CatalogGrid: React.FC<CatalogGridProps> = ({ products }) => {
               </div>
             </div>
 
-            {/* 5. Dual Action Buttons: Direct WhatsApp & Add to Cart */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2">
-              {/* WhatsApp Direct Order Button */}
-              <button
-                onClick={handleDirectWhatsAppOrder}
-                className="w-full py-3.5 rounded-full bg-emerald-600 hover:bg-emerald-700 text-white font-extrabold text-xs uppercase tracking-wider shadow-lg shadow-emerald-600/25 active:scale-95 transition-all flex items-center justify-center gap-2"
-              >
-                <MessageCircle className="w-4 h-4 fill-white" />
-                <span>Pesan via WhatsApp ({formatRupiahShort(grandTotal)})</span>
-              </button>
+            {/* 5. Action Buttons: Direct WhatsApp, Direct Telegram Bot & Add to Cart */}
+            <div className="space-y-2.5 pt-2">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+                {/* WhatsApp Direct Order Button */}
+                <button
+                  type="button"
+                  onClick={handleDirectWhatsAppOrder}
+                  className="w-full py-3.5 px-4 rounded-full bg-emerald-600 hover:bg-emerald-700 text-white font-extrabold text-xs uppercase tracking-wider shadow-lg shadow-emerald-600/25 active:scale-95 transition-all flex items-center justify-center gap-2"
+                >
+                  <MessageCircle className="w-4 h-4 fill-white shrink-0" />
+                  <span>Pesan via WhatsApp ({formatRupiahShort(grandTotal)})</span>
+                </button>
+
+                {/* Telegram Bot Direct Order Button */}
+                <button
+                  type="button"
+                  onClick={handleDirectTelegramOrder}
+                  className="w-full py-3.5 px-4 rounded-full bg-sky-500 hover:bg-sky-600 text-white font-extrabold text-xs uppercase tracking-wider shadow-lg shadow-sky-500/25 active:scale-95 transition-all flex items-center justify-center gap-2"
+                >
+                  <Send className="w-4 h-4 shrink-0" />
+                  <span>Pesan via Telegram ({formatRupiahShort(grandTotal)})</span>
+                </button>
+              </div>
 
               {/* Add to Cart Button */}
               <button
+                type="button"
                 onClick={handleConfirmAddToCart}
-                className="w-full py-3.5 rounded-full bg-amber-500 hover:bg-amber-600 text-white font-extrabold text-xs uppercase tracking-wider shadow-lg shadow-amber-500/25 active:scale-95 transition-all flex items-center justify-center gap-2"
+                className="w-full py-3 rounded-full bg-amber-500 hover:bg-amber-600 text-white font-extrabold text-xs uppercase tracking-wider shadow-md shadow-amber-500/20 active:scale-95 transition-all flex items-center justify-center gap-2"
               >
                 <ShoppingBag className="w-4 h-4" />
                 <span>Tambah ke Keranjang</span>

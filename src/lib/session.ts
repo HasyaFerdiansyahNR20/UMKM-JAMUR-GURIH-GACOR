@@ -46,9 +46,15 @@ async function getHmacKey(secret: string): Promise<CryptoKey> {
 }
 
 function getSecretKey(): string {
+  const configuredSecret =
+    process.env.SESSION_SECRET || process.env.SUPABASE_SERVICE_ROLE_KEY;
+  if (!configuredSecret && process.env.NODE_ENV === "production") {
+    console.warn(
+      "⚠️ [Security Warning]: SESSION_SECRET is not set in production environment variables!"
+    );
+  }
   return (
-    process.env.SESSION_SECRET ||
-    process.env.SUPABASE_SERVICE_ROLE_KEY ||
+    configuredSecret ||
     "gurih_gacor_default_fallback_secure_key_2026_x99!"
   );
 }

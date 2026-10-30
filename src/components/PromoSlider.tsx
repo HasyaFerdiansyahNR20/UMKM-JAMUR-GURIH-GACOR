@@ -25,6 +25,15 @@ export const PromoSlider: React.FC<PromoSliderProps> = ({ promotions }) => {
 
   const promo = activePromos[currentSlide];
 
+  // Sanitize promo.link_url against javascript:/data: protocols (OWASP A03:2021)
+  const rawLink = (promo.link_url || "#katalog").trim();
+  const safePromoLink =
+    rawLink.startsWith("#") ||
+    (rawLink.startsWith("/") && !rawLink.startsWith("//")) ||
+    /^https?:\/\//i.test(rawLink)
+      ? rawLink
+      : "#katalog";
+
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
       <div className="relative rounded-3xl overflow-hidden bg-gradient-to-r from-amber-600 via-amber-500 to-amber-700 text-white shadow-xl shadow-amber-900/10 min-h-[220px] flex items-center">
@@ -35,6 +44,8 @@ export const PromoSlider: React.FC<PromoSliderProps> = ({ promotions }) => {
             <img
               src={promo.banner_url}
               alt={promo.title}
+              width={1200}
+              height={400}
               loading="lazy"
               decoding="async"
               className="w-full h-full object-cover opacity-20 mix-blend-overlay"
@@ -63,7 +74,7 @@ export const PromoSlider: React.FC<PromoSliderProps> = ({ promotions }) => {
           </p>
 
           <a
-            href={promo.link_url || "#catalog"}
+            href={safePromoLink}
             className="inline-flex items-center gap-2 px-6 py-2.5 rounded-full bg-white text-stone-900 hover:bg-amber-50 font-extrabold text-xs uppercase tracking-wider shadow-md hover:shadow-lg transition-all active:scale-95"
           >
             <span>{promo.cta_text || "Klaim Promo"}</span>

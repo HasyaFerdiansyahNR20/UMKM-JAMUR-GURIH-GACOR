@@ -3,7 +3,7 @@ import Link from "next/link";
 import { Phone, Instagram, Clock, MapPin } from "lucide-react";
 
 export const Footer: React.FC = () => {
-  const whatsappPhone = process.env.NEXT_PUBLIC_WHATSAPP_NUMBER || "628981613310";
+  const whatsappPhone = process.env.NEXT_PUBLIC_WHATSAPP_NUMBER || "62895634949189";
 
   return (
     <footer className="bg-stone-900 text-white pt-16 pb-12 border-t border-stone-800">
@@ -15,6 +15,8 @@ export const Footer: React.FC = () => {
             <img
               src="/logo-gurih-gacor.webp"
               alt="Logo Gurih Gacor"
+              width={64}
+              height={64}
               loading="lazy"
               decoding="async"
               className="w-full h-full object-cover rounded-xl"

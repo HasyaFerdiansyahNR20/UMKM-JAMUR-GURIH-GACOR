@@ -1,7 +1,11 @@
 import { CartItem } from "@/types";
 import { formatRupiahShort } from "./utils";
 
-interface WhatsAppOrderData {
+export const DEFAULT_WHATSAPP_NUMBER = "62895634949189";
+export const DEFAULT_WHATSAPP_DISPLAY = "0895-6349-49189";
+export const DEFAULT_TELEGRAM_BOT = "GurihGacorBot";
+
+export interface WhatsAppOrderData {
   customerName: string;
   customerPhone: string;
   orderType: "takeaway" | "dine_in" | "delivery";
@@ -11,6 +15,17 @@ interface WhatsAppOrderData {
   items: CartItem[];
   totalAmount: number;
   orderNumber?: string;
+}
+
+export interface DirectProductOrderParams {
+  productName: string;
+  price: number;
+  quantity: number;
+  sizeWeight?: string;
+  flavor?: string;
+  sambal?: string;
+  addons?: string[];
+  notes?: string;
 }
 
 function cleanSizeText(str?: string): string {
@@ -77,26 +92,7 @@ export function formatWhatsAppMessage(data: WhatsAppOrderData): string {
   return text;
 }
 
-export function generateWhatsAppUrl(data: WhatsAppOrderData): string {
-  const phone = process.env.NEXT_PUBLIC_WHATSAPP_NUMBER || "628981613310";
-  // Clean phone number: remove +, -, spaces
-  const cleanPhone = phone.replace(/[^0-9]/g, "");
-  const message = formatWhatsAppMessage(data);
-  return `https://wa.me/${cleanPhone}?text=${encodeURIComponent(message)}`;
-}
-
-export function generateDirectProductWhatsAppUrl(params: {
-  productName: string;
-  price: number;
-  quantity: number;
-  sizeWeight?: string;
-  flavor?: string;
-  sambal?: string;
-  addons?: string[];
-  notes?: string;
-}): string {
-  const phone = process.env.NEXT_PUBLIC_WHATSAPP_NUMBER || "628981613310";
-  const cleanPhone = phone.replace(/[^0-9]/g, "");
+export function formatDirectProductMessage(params: DirectProductOrderParams): string {
   const storeName = process.env.NEXT_PUBLIC_STORE_NAME || "UMKM Gurih Gacor";
 
   let text = `Halo Admin *${storeName}*, saya mau pesan:\n\n`;
@@ -110,6 +106,33 @@ export function generateDirectProductWhatsAppUrl(params: {
   text += `\n💰 *Estimasi Total: ${formatRupiahShort(params.price * params.quantity)}*\n\n`;
   text += `Apakah menu ini tersedia untuk dipesan sekarang? Terima kasih! 🙏`;
 
+  return text;
+}
+
+export function generateWhatsAppUrl(data: WhatsAppOrderData): string {
+  const phone = process.env.NEXT_PUBLIC_WHATSAPP_NUMBER || DEFAULT_WHATSAPP_NUMBER;
+  // Clean phone number: remove +, -, spaces
+  const cleanPhone = phone.replace(/[^0-9]/g, "");
+  const message = formatWhatsAppMessage(data);
+  return `https://wa.me/${cleanPhone}?text=${encodeURIComponent(message)}`;
+}
+
+export function generateDirectProductWhatsAppUrl(params: DirectProductOrderParams): string {
+  const phone = process.env.NEXT_PUBLIC_WHATSAPP_NUMBER || DEFAULT_WHATSAPP_NUMBER;
+  const cleanPhone = phone.replace(/[^0-9]/g, "");
+  const text = formatDirectProductMessage(params);
   return `https://wa.me/${cleanPhone}?text=${encodeURIComponent(text)}`;
+}
+
+export function generateTelegramUrl(data: WhatsAppOrderData): string {
+  const botUsername = (process.env.NEXT_PUBLIC_TELEGRAM_BOT_USERNAME || DEFAULT_TELEGRAM_BOT).replace(/^@/, "").trim();
+  const message = formatWhatsAppMessage(data);
+  return `https://t.me/${botUsername}?text=${encodeURIComponent(message)}`;
+}
+
+export function generateDirectProductTelegramUrl(params: DirectProductOrderParams): string {
+  const botUsername = (process.env.NEXT_PUBLIC_TELEGRAM_BOT_USERNAME || DEFAULT_TELEGRAM_BOT).replace(/^@/, "").trim();
+  const text = formatDirectProductMessage(params);
+  return `https://t.me/${botUsername}?text=${encodeURIComponent(text)}`;
 }
 

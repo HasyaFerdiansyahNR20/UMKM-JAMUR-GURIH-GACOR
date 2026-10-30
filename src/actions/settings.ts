@@ -16,7 +16,7 @@ export interface StoreSettings {
 let currentSettings: StoreSettings = {
   storeName: process.env.NEXT_PUBLIC_STORE_NAME || "UMKM Gurih Gacor",
   tagline: process.env.NEXT_PUBLIC_STORE_TAGLINE || "KRIUK-KRIUK NYA BIKIN NGILER!",
-  whatsappNumber: process.env.NEXT_PUBLIC_WHATSAPP_NUMBER || "628981613310",
+  whatsappNumber: process.env.NEXT_PUBLIC_WHATSAPP_NUMBER || "62895634949189",
   address: process.env.NEXT_PUBLIC_STORE_ADDRESS || "Jl. Reni Jaya Utara 1 Gg. H. Muntir No.4, Pd. Petir, Kec. Bojongsari, Kota Tangerang Selatan, Banten 16517",
   isOpen: true,
   emergencyStaticMode: false,

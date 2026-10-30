@@ -3,6 +3,7 @@ import { productService } from "@/services/productService";
 import { productSchema } from "@/lib/validations";
 import { checkAdminAuth } from "@/lib/serverAuth";
 import { verifySessionToken } from "@/lib/session";
+import { safeCompareStrings } from "@/lib/rateLimit";
 
 export async function GET() {
   try {
@@ -32,8 +33,8 @@ export async function POST(request: Request) {
 
     let isAuthorized = false;
 
-    // 1. Verify via Service Role Key
-    if (serviceRoleKey && adminKey && adminKey === serviceRoleKey) {
+    // 1. Verify via Service Role Key (constant-time check)
+    if (safeCompareStrings(adminKey, serviceRoleKey)) {
       isAuthorized = true;
     }
 

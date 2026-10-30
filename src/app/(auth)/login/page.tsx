@@ -11,7 +11,12 @@ function LoginForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const isLoggedOut = searchParams.get("logged_out") === "true";
-  const redirectTarget = searchParams.get("from") || "/dashboard";
+  const rawFrom = searchParams.get("from") || "/dashboard";
+  // Prevent Open Redirect (OWASP A01:2021): only allow internal single-slash paths
+  const redirectTarget =
+    rawFrom.startsWith("/") && !rawFrom.startsWith("//") && !rawFrom.startsWith("/\\")
+      ? rawFrom
+      : "/dashboard";
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");

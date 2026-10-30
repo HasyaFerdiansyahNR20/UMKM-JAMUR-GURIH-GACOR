@@ -1,5 +1,4 @@
 import React from "react";
-import Image from "next/image";
 import { Heart, Award, ShieldCheck, Leaf, Flame, Users, CheckCircle2 } from "lucide-react";
 
 export const AboutSection: React.FC = () => {
@@ -63,6 +62,8 @@ export const AboutSection: React.FC = () => {
                 <img
                   src="/logo-gurih-gacor.webp"
                   alt="Logo Maskot Gurih Gacor"
+                  width={288}
+                  height={288}
                   loading="lazy"
                   decoding="async"
                   className="w-full h-full object-contain rounded-2xl transform group-hover:scale-105 transition-transform duration-300"

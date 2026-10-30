@@ -1,10 +1,12 @@
 "use server";
 
+import { headers } from "next/headers";
 import { orderService } from "@/services/orderService";
 import { CartItem } from "@/types";
 import { revalidatePath } from "next/cache";
 import { checkoutSchema } from "@/lib/validations";
 import { requireAdminSession } from "@/lib/serverAuth";
+import { checkRateLimit } from "@/lib/rateLimit";
 
 const ALLOWED_ORDER_STATUSES = [
   "pending",
@@ -12,6 +14,7 @@ const ALLOWED_ORDER_STATUSES = [
   "preparing",
   "ready",
   "delivered",
+  "completed",
   "cancelled",
 ] as const;
 
@@ -24,7 +27,21 @@ export async function createOrderAction(input: {
   notes?: string;
   items: CartItem[];
   totalAmount: number;
+  paymentMethod?: "Direct WhatsApp" | "Direct Telegram";
 }) {
+  // 0. Anti-spam rate limiting (max 10 orders per minute per IP)
+  const headerStore = await headers();
+  const clientIp =
+    headerStore.get("x-forwarded-for")?.split(",")[0]?.trim() ||
+    headerStore.get("x-real-ip") ||
+    "local";
+  const rateCheck = checkRateLimit(`order:${clientIp}`, 10, 60_000);
+  if (!rateCheck.allowed) {
+    throw new Error(
+      `Terlalu banyak permintaan pesanan dalam waktu singkat. Silakan tunggu ${rateCheck.retryAfterSeconds} detik.`
+    );
+  }
+
   // 1. Zod input validation
   const validation = checkoutSchema.safeParse({
     customerName: input.customerName,

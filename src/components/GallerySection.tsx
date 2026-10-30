@@ -104,6 +104,8 @@ export const GallerySection: React.FC = () => {
                 <img
                   src={item.image}
                   alt={item.title}
+                  width={400}
+                  height={256}
                   loading="lazy"
                   decoding="async"
                   className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
@@ -151,6 +153,8 @@ export const GallerySection: React.FC = () => {
               <img
                 src={selectedPhoto.image}
                 alt={selectedPhoto.title}
+                width={800}
+                height={450}
                 loading="lazy"
                 decoding="async"
                 className="w-full h-full object-contain bg-stone-950"

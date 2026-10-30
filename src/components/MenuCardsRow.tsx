@@ -188,6 +188,8 @@ export const MenuCardsRow: React.FC<MenuCardsRowProps> = ({ products }) => {
                           <img
                             src={product.image_url}
                             alt={product.name}
+                            width={360}
+                            height={176}
                             loading="lazy"
                             decoding="async"
                             className="w-full h-40 sm:h-44 object-cover rounded-[22px] shadow-sm"

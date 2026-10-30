@@ -6,8 +6,8 @@ import { Phone, MapPin, Clock, Instagram, Share2, Check, ExternalLink, MessageCi
 export const ContactSection: React.FC = () => {
   const [copied, setCopied] = useState(false);
 
-  const whatsappPhone = process.env.NEXT_PUBLIC_WHATSAPP_NUMBER || "628981613310";
-  const displayPhone = "0898-1613-310";
+  const whatsappPhone = process.env.NEXT_PUBLIC_WHATSAPP_NUMBER || "62895634949189";
+  const displayPhone = "0895-6349-49189";
   const address = "Jl. Reni Jaya Utara 1 Gg. H. Muntir No.4, Pd. Petir, Kec. Bojongsari, Kota Tangerang Selatan, Banten 16517";
 
   const handleCopyAddress = () => {

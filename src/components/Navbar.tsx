@@ -18,7 +18,7 @@ export const Navbar: React.FC = () => {
   const totalItems = isMounted ? getTotalItems() : 0;
   const totalAmount = isMounted ? getTotalAmount() : 0;
 
-  const whatsappPhone = process.env.NEXT_PUBLIC_WHATSAPP_NUMBER || "628981613310";
+  const whatsappPhone = process.env.NEXT_PUBLIC_WHATSAPP_NUMBER || "62895634949189";
 
   const navLinks = [
     { label: "Beranda", href: "#beranda" },
@@ -53,6 +53,8 @@ export const Navbar: React.FC = () => {
               <img
                 src="/logo-gurih-gacor.webp"
                 alt="Logo Gurih Gacor"
+                width={48}
+                height={48}
                 loading="eager"
                 fetchPriority="high"
                 decoding="async"

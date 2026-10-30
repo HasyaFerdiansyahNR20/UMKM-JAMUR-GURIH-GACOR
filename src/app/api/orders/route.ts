@@ -3,6 +3,7 @@ import { orderService } from "@/services/orderService";
 import { checkoutSchema } from "@/lib/validations";
 import { checkAdminAuth } from "@/lib/serverAuth";
 import { verifySessionToken } from "@/lib/session";
+import { checkRateLimit, safeCompareStrings } from "@/lib/rateLimit";
 
 export async function GET(request: Request) {
   try {
@@ -11,8 +12,8 @@ export async function GET(request: Request) {
 
     let isAuthorized = false;
 
-    // 1. Verify via internal Service Role Key
-    if (serviceRoleKey && adminKey && adminKey === serviceRoleKey) {
+    // 1. Verify via internal Service Role Key (constant-time check)
+    if (safeCompareStrings(adminKey, serviceRoleKey)) {
       isAuthorized = true;
     }
 
@@ -59,6 +60,22 @@ export async function GET(request: Request) {
 
 export async function POST(request: Request) {
   try {
+    // 0. Rate limiting (OWASP API4:2023) - max 10 requests per minute per IP
+    const clientIp =
+      request.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ||
+      request.headers.get("x-real-ip") ||
+      "local";
+    const rateCheck = checkRateLimit(`api-orders:${clientIp}`, 10, 60_000);
+    if (!rateCheck.allowed) {
+      return NextResponse.json(
+        {
+          success: false,
+          error: `Terlalu banyak permintaan pesanan. Coba lagi dalam ${rateCheck.retryAfterSeconds} detik.`,
+        },
+        { status: 429 }
+      );
+    }
+
     const body = await request.json();
 
     // 1. Validate customer & order information with Zod

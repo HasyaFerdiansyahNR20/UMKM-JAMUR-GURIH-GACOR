@@ -1,8 +1,9 @@
 "use server";
 
-import { cookies } from "next/headers";
+import { cookies, headers } from "next/headers";
 import { supabaseAdmin } from "@/db";
 import { createAdminSessionToken, ADMIN_SESSION_COOKIE } from "@/lib/session";
+import { checkRateLimit, safeCompareStrings } from "@/lib/rateLimit";
 
 export async function loginAdminAction(formData: {
   email: string;
@@ -16,36 +17,52 @@ export async function loginAdminAction(formData: {
       return { success: false, error: "Email dan kata sandi wajib diisi." };
     }
 
-    let isAuthorized = false;
-
-    // 1. First, attempt official Supabase Auth verification
-    try {
-      const { data, error } = await supabaseAdmin.auth.signInWithPassword({
-        email: trimmedEmail,
-        password: trimmedPass,
-      });
-
-      if (!error && data?.session) {
-        isAuthorized = true;
-      }
-    } catch (sbErr) {
-      // Supabase auth attempt failed or offline
+    // 0. Brute-force protection (OWASP A07:2021) - max 5 login attempts per minute per IP/Email
+    const headerStore = await headers();
+    const clientIp =
+      headerStore.get("x-forwarded-for")?.split(",")[0]?.trim() ||
+      headerStore.get("x-real-ip") ||
+      "local";
+    const rateCheck = checkRateLimit(`login:${clientIp}:${trimmedEmail}`, 5, 60_000);
+    if (!rateCheck.allowed) {
+      return {
+        success: false,
+        error: `Terlalu banyak percobaan login. Silakan tunggu ${rateCheck.retryAfterSeconds} detik lagi.`,
+      };
     }
 
-    // 2. Fallback to securely configured environment administrator credentials
+    const configuredEmails = (
+      process.env.ADMIN_EMAILS || "admin@gurihgacor.com,fnrhasya@gmail.com"
+    )
+      .split(",")
+      .map((e) => e.trim().toLowerCase());
+
+    let isAuthorized = false;
+
+    // 1. First, attempt official Supabase Auth verification (restricted to ADMIN_EMAILS)
+    if (configuredEmails.includes(trimmedEmail)) {
+      try {
+        const { data, error } = await supabaseAdmin.auth.signInWithPassword({
+          email: trimmedEmail,
+          password: trimmedPass,
+        });
+
+        if (!error && data?.session) {
+          isAuthorized = true;
+        }
+      } catch (sbErr) {
+        // Supabase auth attempt failed or offline
+      }
+    }
+
+    // 2. Fallback to securely configured environment administrator credentials (constant-time check)
     if (!isAuthorized) {
-      const configuredEmails = (
-        process.env.ADMIN_EMAILS || "admin@gurihgacor.com,fnrhasya@gmail.com"
-      )
-        .split(",")
-        .map((e) => e.trim().toLowerCase());
-      
       const configuredPassword = process.env.ADMIN_PASSWORD;
 
       if (
         configuredPassword &&
         configuredEmails.includes(trimmedEmail) &&
-        trimmedPass === configuredPassword
+        safeCompareStrings(trimmedPass, configuredPassword)
       ) {
         isAuthorized = true;
       }

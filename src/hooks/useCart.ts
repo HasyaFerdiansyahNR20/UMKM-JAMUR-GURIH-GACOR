@@ -4,9 +4,44 @@ import { create } from "zustand";
 import { persist } from "zustand/middleware";
 import { CartItem, Product, ProductAddon } from "@/types";
 
+export interface CheckoutFormInfo {
+  customerName: string;
+  customerPhone: string;
+  orderType: "takeaway" | "dine_in" | "delivery";
+  deliveryAddress: string;
+  tableNumber: string;
+  notes: string;
+}
+
+export interface LastSubmittedOrder {
+  orderNumber: string;
+  channel: "whatsapp" | "telegram";
+  whatsappUrl: string;
+  telegramUrl: string;
+  createdAt: string;
+}
+
+export interface ProductModalDraft {
+  sizeLabel: string;
+  quantity: number;
+  notes: string;
+}
+
+const DEFAULT_CHECKOUT_INFO: CheckoutFormInfo = {
+  customerName: "",
+  customerPhone: "",
+  orderType: "takeaway",
+  deliveryAddress: "",
+  tableNumber: "",
+  notes: "",
+};
+
 interface CartState {
   items: CartItem[];
   isOpen: boolean;
+  checkoutInfo: CheckoutFormInfo;
+  lastSubmittedOrder: LastSubmittedOrder | null;
+  productDrafts: Record<string, ProductModalDraft>;
   addItem: (
     product: Product,
     quantity?: number,
@@ -20,6 +55,11 @@ interface CartState {
   openCart: () => void;
   closeCart: () => void;
   toggleCart: () => void;
+  setCheckoutInfo: (partial: Partial<CheckoutFormInfo>) => void;
+  resetCheckoutInfo: () => void;
+  setLastSubmittedOrder: (order: LastSubmittedOrder | null) => void;
+  setProductDraft: (productId: string, draft: ProductModalDraft) => void;
+  clearProductDraft: (productId: string) => void;
   getTotalAmount: () => number;
   getTotalItems: () => number;
 }
@@ -43,6 +83,9 @@ export const useCart = create<CartState>()(
     (set, get) => ({
       items: [],
       isOpen: false,
+      checkoutInfo: DEFAULT_CHECKOUT_INFO,
+      lastSubmittedOrder: null,
+      productDrafts: {},
 
       addItem: (product, quantity = 1, selectedSambal = "", selectedAddons = [], notes = "") => {
         set((state) => {
@@ -66,7 +109,7 @@ export const useCart = create<CartState>()(
               ...updatedItems[existingIndex],
               quantity: updatedItems[existingIndex].quantity + quantity,
             };
-            return { items: updatedItems, isOpen: true };
+            return { items: updatedItems, isOpen: true, lastSubmittedOrder: null };
           }
 
           const newItem: CartItem = {
@@ -78,7 +121,7 @@ export const useCart = create<CartState>()(
             itemTotal,
           };
 
-          return { items: [...state.items, newItem], isOpen: true };
+          return { items: [...state.items, newItem], isOpen: true, lastSubmittedOrder: null };
         });
       },
 
@@ -87,6 +130,7 @@ export const useCart = create<CartState>()(
           items: state.items.filter(
             (item) => !isSameCartVariant(item, productId, selectedSambal, notes, itemTotal)
           ),
+          lastSubmittedOrder: null,
         }));
       },
 
@@ -103,13 +147,38 @@ export const useCart = create<CartState>()(
             }
             return item;
           }),
+          lastSubmittedOrder: null,
         }));
       },
 
-      clearCart: () => set({ items: [] }),
+      clearCart: () => set({ items: [], lastSubmittedOrder: null }),
       openCart: () => set({ isOpen: true }),
       closeCart: () => set({ isOpen: false }),
       toggleCart: () => set((state) => ({ isOpen: !state.isOpen })),
+
+      setCheckoutInfo: (partial) =>
+        set((state) => ({
+          checkoutInfo: { ...state.checkoutInfo, ...partial },
+        })),
+
+      resetCheckoutInfo: () =>
+        set({
+          checkoutInfo: DEFAULT_CHECKOUT_INFO,
+        }),
+
+      setLastSubmittedOrder: (order) => set({ lastSubmittedOrder: order }),
+
+      setProductDraft: (productId, draft) =>
+        set((state) => ({
+          productDrafts: { ...state.productDrafts, [productId]: draft },
+        })),
+
+      clearProductDraft: (productId) =>
+        set((state) => {
+          const next = { ...state.productDrafts };
+          delete next[productId];
+          return { productDrafts: next };
+        }),
 
       getTotalAmount: () => {
         const { items } = get();
@@ -123,7 +192,12 @@ export const useCart = create<CartState>()(
     }),
     {
       name: "umkm-gurih-gacor-cart-v2",
-      partialize: (state) => ({ items: state.items }),
+      partialize: (state) => ({
+        items: state.items,
+        checkoutInfo: state.checkoutInfo,
+        lastSubmittedOrder: state.lastSubmittedOrder,
+        productDrafts: state.productDrafts,
+      }),
     }
   )
 );

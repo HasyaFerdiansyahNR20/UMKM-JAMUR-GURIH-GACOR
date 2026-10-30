@@ -1,26 +1,71 @@
 import { z } from "zod";
 
+/**
+ * Validates that a string is a safe image URL (http://, https://) or an internal static path (/...)
+ * Blocks dangerous schemes like javascript:, data:, vbscript: (OWASP A03:2021)
+ */
+const safeImageUrlSchema = z
+  .string()
+  .min(1, "URL Gambar wajib diisi")
+  .refine(
+    (val) => {
+      const trimmed = val.trim();
+      if (trimmed.startsWith("/") && !trimmed.startsWith("//")) return true;
+      try {
+        const parsed = new URL(trimmed);
+        return parsed.protocol === "https:" || parsed.protocol === "http:";
+      } catch {
+        return false;
+      }
+    },
+    { message: "URL Gambar harus berupa link https:// yang valid atau path internal (/...)" }
+  );
+
+/**
+ * Validates that an optional link URL is a safe anchor (#...), relative path (/...), or http(s) URL
+ */
+const safeOptionalLinkSchema = z
+  .string()
+  .optional()
+  .refine(
+    (val) => {
+      if (!val || val.trim() === "") return true;
+      const trimmed = val.trim();
+      if (trimmed.startsWith("#") || (trimmed.startsWith("/") && !trimmed.startsWith("//"))) {
+        return true;
+      }
+      try {
+        const parsed = new URL(trimmed);
+        return parsed.protocol === "https:" || parsed.protocol === "http:";
+      } catch {
+        return false;
+      }
+    },
+    { message: "Link tujuan tidak valid (gunakan #anchor, /path, atau https://)" }
+  );
+
 export const checkoutSchema = z.object({
-  customerName: z.string().min(2, "Nama minimal 2 karakter"),
+  customerName: z.string().min(2, "Nama minimal 2 karakter").max(100, "Nama terlalu panjang"),
   customerPhone: z
     .string()
     .min(9, "Nomor WhatsApp minimal 9 digit")
+    .max(25, "Nomor WhatsApp terlalu panjang")
     .regex(/^[0-9+-\s]+$/, "Nomor WhatsApp tidak valid"),
   orderType: z.enum(["takeaway", "dine_in", "delivery"]),
-  deliveryAddress: z.string().optional(),
-  tableNumber: z.string().optional(),
-  notes: z.string().optional(),
+  deliveryAddress: z.string().max(300, "Alamat terlalu panjang").optional(),
+  tableNumber: z.string().max(20, "Nomor meja terlalu panjang").optional(),
+  notes: z.string().max(500, "Catatan terlalu panjang").optional(),
 });
 
 export type CheckoutFormData = z.infer<typeof checkoutSchema>;
 
 export const productSchema = z.object({
-  name: z.string().min(3, "Nama produk minimal 3 karakter"),
-  description: z.string().min(5, "Deskripsi minimal 5 karakter"),
+  name: z.string().min(3, "Nama produk minimal 3 karakter").max(100),
+  description: z.string().min(5, "Deskripsi minimal 5 karakter").max(1000),
   category_id: z.string().min(1, "Kategori harus dipilih"),
   price: z.number().min(500, "Harga minimal Rp 500"),
   original_price: z.number().optional().nullable(),
-  image_url: z.string().url("URL Gambar harus valid"),
+  image_url: safeImageUrlSchema,
   availability_status: z.enum(["available", "unavailable", "sold_out"]),
   spicy_level: z.number().min(0).max(5).default(0),
   is_bestseller: z.boolean().default(false),
@@ -30,13 +75,13 @@ export const productSchema = z.object({
 export type ProductFormData = z.infer<typeof productSchema>;
 
 export const promoSchema = z.object({
-  title: z.string().min(3, "Judul promo minimal 3 karakter"),
-  subtitle: z.string().optional(),
-  badge: z.string().optional(),
-  banner_url: z.string().url("URL Banner harus valid"),
-  link_url: z.string().optional(),
-  cta_text: z.string().optional(),
-  discount_info: z.string().optional(),
+  title: z.string().min(3, "Judul promo minimal 3 karakter").max(100),
+  subtitle: z.string().max(250).optional(),
+  badge: z.string().max(50).optional(),
+  banner_url: safeImageUrlSchema,
+  link_url: safeOptionalLinkSchema,
+  cta_text: z.string().max(50).optional(),
+  discount_info: z.string().max(100).optional(),
   is_active: z.boolean().default(true),
 });
 

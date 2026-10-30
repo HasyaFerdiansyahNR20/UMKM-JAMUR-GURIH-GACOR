@@ -1,5 +1,5 @@
 export type AvailabilityStatus = "available" | "unavailable" | "sold_out";
-export type OrderStatus = "pending" | "confirmed" | "preparing" | "ready" | "delivered" | "cancelled";
+export type OrderStatus = "pending" | "confirmed" | "preparing" | "ready" | "delivered" | "completed" | "cancelled";
 export type PaymentStatus = "unpaid" | "paid" | "expired" | "refunded";
 export type UserRole = "admin" | "staff" | "customer";
 

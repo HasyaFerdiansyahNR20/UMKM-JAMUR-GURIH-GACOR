@@ -29,17 +29,26 @@ export async function checkAdminAuth(): Promise<AuthCheckResult> {
       }
     }
 
-    // 2. Check Supabase access token if present
+    // 2. Check Supabase access token if present and verify against ADMIN_EMAILS whitelist
     const sbToken = cookieStore.get("sb-access-token")?.value;
     if (sbToken && sbToken !== "logged_out" && sbToken.length > 20) {
       try {
         const { data, error } = await supabaseAdmin.auth.getUser(sbToken);
-        if (!error && data?.user?.email) {
-          return {
-            isAuthenticated: true,
-            email: data.user.email,
-            role: "admin",
-          };
+        const userEmail = data?.user?.email?.trim().toLowerCase();
+        if (!error && userEmail) {
+          const allowedAdminEmails = (
+            process.env.ADMIN_EMAILS || "admin@gurihgacor.com,fnrhasya@gmail.com"
+          )
+            .split(",")
+            .map((e) => e.trim().toLowerCase());
+
+          if (allowedAdminEmails.includes(userEmail)) {
+            return {
+              isAuthenticated: true,
+              email: userEmail,
+              role: "admin",
+            };
+          }
         }
       } catch (sbErr) {
         // Continue to unauthenticated

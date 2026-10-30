@@ -1,10 +1,14 @@
 "use client";
 
 import React, { useState } from "react";
-import { X, Trash2, Send, ShoppingBag, Plus, Minus, ArrowRight } from "lucide-react";
+import { X, Trash2, Send, ShoppingBag, Plus, Minus, MessageCircle, CheckCircle2, RotateCcw } from "lucide-react";
 import { useCart } from "@/hooks/useCart";
 import { formatRupiahShort } from "@/lib/utils";
-import { generateWhatsAppUrl } from "@/lib/whatsapp";
+import {
+  formatWhatsAppMessage,
+  generateWhatsAppUrl,
+  generateTelegramUrl,
+} from "@/lib/whatsapp";
 import { checkoutSchema } from "@/lib/validations";
 import { createOrderAction } from "@/actions/orders";
 
@@ -17,24 +21,29 @@ export const CartDrawer: React.FC = () => {
     removeItem,
     clearCart,
     getTotalAmount,
+    checkoutInfo,
+    setCheckoutInfo,
+    lastSubmittedOrder,
+    setLastSubmittedOrder,
   } = useCart();
 
-  const [customerName, setCustomerName] = useState("");
-  const [customerPhone, setCustomerPhone] = useState("");
-  const [orderType, setOrderType] = useState<"takeaway" | "dine_in" | "delivery">("takeaway");
-  const [deliveryAddress, setDeliveryAddress] = useState("");
-  const [tableNumber, setTableNumber] = useState("");
-  const [notes, setNotes] = useState("");
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   if (!isOpen) return null;
 
+  const {
+    customerName,
+    customerPhone,
+    orderType,
+    deliveryAddress,
+    tableNumber,
+    notes,
+  } = checkoutInfo;
+
   const totalAmount = getTotalAmount();
 
-  const handleCheckout = async (e: React.FormEvent) => {
-    e.preventDefault();
-
+  const handleCheckoutChannel = async (channel: "whatsapp" | "telegram") => {
     if (items.length === 0) {
       alert("Keranjang Anda masih kosong.");
       return;
@@ -64,6 +73,8 @@ export const CartDrawer: React.FC = () => {
     setErrors({});
     setIsSubmitting(true);
 
+    const paymentMethod = channel === "telegram" ? "Direct Telegram" : "Direct WhatsApp";
+
     try {
       // 1. Log order asynchronously to Supabase
       const orderRes = await createOrderAction({
@@ -75,10 +86,10 @@ export const CartDrawer: React.FC = () => {
         notes,
         items,
         totalAmount,
+        paymentMethod,
       });
 
-      // 2. Generate WhatsApp URL
-      const waUrl = generateWhatsAppUrl({
+      const orderPayload = {
         customerName,
         customerPhone,
         orderType,
@@ -88,16 +99,34 @@ export const CartDrawer: React.FC = () => {
         items,
         totalAmount,
         orderNumber: orderRes.orderNumber,
+      };
+
+      // 2. Generate both WhatsApp & Telegram URLs + copy formatted text to clipboard as fallback
+      const waUrl = generateWhatsAppUrl(orderPayload);
+      const tgUrl = generateTelegramUrl(orderPayload);
+      const formattedText = formatWhatsAppMessage(orderPayload);
+
+      try {
+        await navigator.clipboard?.writeText(formattedText);
+      } catch {
+        // Ignore clipboard permission errors
+      }
+
+      // 3. Persist last submitted order WITHOUT wiping the cart so accidental close never loses items
+      setLastSubmittedOrder({
+        orderNumber: orderRes.orderNumber || `GCR-${Date.now().toString().slice(-6)}`,
+        channel,
+        whatsappUrl: waUrl,
+        telegramUrl: tgUrl,
+        createdAt: new Date().toISOString(),
       });
 
-      // 3. Clear cart & open WhatsApp
-      clearCart();
-      closeCart();
-      window.open(waUrl, "_blank");
+      const targetUrl = channel === "telegram" ? tgUrl : waUrl;
+      window.open(targetUrl, "_blank", "noopener,noreferrer");
     } catch (err) {
       console.error("Checkout error:", err);
-      // Fallback: still open WhatsApp even if DB logging fails
-      const fallbackUrl = generateWhatsAppUrl({
+      const fallbackOrderNum = `GCR-${Date.now().toString().slice(-6)}`;
+      const fallbackPayload = {
         customerName,
         customerPhone,
         orderType,
@@ -106,13 +135,30 @@ export const CartDrawer: React.FC = () => {
         notes,
         items,
         totalAmount,
+        orderNumber: fallbackOrderNum,
+      };
+
+      const waUrl = generateWhatsAppUrl(fallbackPayload);
+      const tgUrl = generateTelegramUrl(fallbackPayload);
+
+      setLastSubmittedOrder({
+        orderNumber: fallbackOrderNum,
+        channel,
+        whatsappUrl: waUrl,
+        telegramUrl: tgUrl,
+        createdAt: new Date().toISOString(),
       });
-      clearCart();
-      closeCart();
-      window.open(fallbackUrl, "_blank");
+
+      const targetUrl = channel === "telegram" ? tgUrl : waUrl;
+      window.open(targetUrl, "_blank", "noopener,noreferrer");
     } finally {
       setIsSubmitting(false);
     }
+  };
+
+  const handleCheckoutSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    await handleCheckoutChannel("whatsapp");
   };
 
   return (
@@ -174,6 +220,8 @@ export const CartDrawer: React.FC = () => {
                     <img
                       src={item.product.image_url}
                       alt={item.product.name}
+                      width={64}
+                      height={64}
                       loading="lazy"
                       decoding="async"
                       className="w-16 h-16 rounded-xl object-cover shrink-0"
@@ -267,19 +315,45 @@ export const CartDrawer: React.FC = () => {
             )}
           </div>
 
-          {/* Form & Direct WhatsApp Checkout Section */}
+          {/* Form & Direct WhatsApp / Telegram Checkout Section */}
           {items.length > 0 && (
             <div className="p-6 border-t border-stone-200 bg-[#faf8f5] space-y-4">
               
-              {/* Order Form */}
-              <form onSubmit={handleCheckout} className="space-y-3">
+              {/* Anti-Lost Order Recovery Banner (Shown after clicking checkout so accidental close never loses order) */}
+              {lastSubmittedOrder && (
+                <div className="p-3.5 rounded-2xl bg-emerald-50 border border-emerald-200 text-xs text-emerald-950 space-y-2">
+                  <div className="flex items-start justify-between gap-2">
+                    <div className="flex items-center gap-1.5 font-extrabold text-emerald-800">
+                      <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
+                      <span>Pesanan #{lastSubmittedOrder.orderNumber} Tersimpan Aman</span>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        if (confirm("Pesanan sudah terkirim? Kosongkan keranjang sekarang?")) {
+                          clearCart();
+                        }
+                      }}
+                      className="text-[10px] font-bold text-stone-500 hover:text-red-600 underline shrink-0"
+                    >
+                      Kosongkan Keranjang
+                    </button>
+                  </div>
+                  <p className="text-[11px] text-emerald-800 leading-relaxed">
+                    Jika WhatsApp/Telegram tidak sengaja tertutup, daftar pesanan Anda masih tersimpan di sini (teks pesanan juga otomatis disalin ke clipboard).
+                  </p>
+                </div>
+              )}
+
+              {/* Order Form (Auto-persisted in localStorage) */}
+              <form onSubmit={handleCheckoutSubmit} className="space-y-3">
                 <div className="grid grid-cols-2 gap-2">
                   <div>
                     <input
                       type="text"
                       placeholder="Nama Anda *"
                       value={customerName}
-                      onChange={(e) => setCustomerName(e.target.value)}
+                      onChange={(e) => setCheckoutInfo({ customerName: e.target.value })}
                       className={`w-full px-3 py-2 text-xs rounded-xl border bg-white focus:outline-none focus:ring-1 focus:ring-amber-500 ${
                         errors.customerName ? "border-red-500" : "border-stone-300"
                       }`}
@@ -293,7 +367,7 @@ export const CartDrawer: React.FC = () => {
                       type="tel"
                       placeholder="No. WhatsApp (08xxx) *"
                       value={customerPhone}
-                      onChange={(e) => setCustomerPhone(e.target.value)}
+                      onChange={(e) => setCheckoutInfo({ customerPhone: e.target.value })}
                       className={`w-full px-3 py-2 text-xs rounded-xl border bg-white focus:outline-none focus:ring-1 focus:ring-amber-500 ${
                         errors.customerPhone ? "border-red-500" : "border-stone-300"
                       }`}
@@ -308,7 +382,7 @@ export const CartDrawer: React.FC = () => {
                 <div className="grid grid-cols-3 gap-1 bg-stone-200/70 p-1 rounded-xl text-[11px] font-bold">
                   <button
                     type="button"
-                    onClick={() => setOrderType("takeaway")}
+                    onClick={() => setCheckoutInfo({ orderType: "takeaway" })}
                     className={`py-1.5 rounded-lg transition-all ${
                       orderType === "takeaway" ? "bg-white text-stone-900 shadow-sm" : "text-stone-600"
                     }`}
@@ -317,7 +391,7 @@ export const CartDrawer: React.FC = () => {
                   </button>
                   <button
                     type="button"
-                    onClick={() => setOrderType("dine_in")}
+                    onClick={() => setCheckoutInfo({ orderType: "dine_in" })}
                     className={`py-1.5 rounded-lg transition-all ${
                       orderType === "dine_in" ? "bg-white text-stone-900 shadow-sm" : "text-stone-600"
                     }`}
@@ -326,7 +400,7 @@ export const CartDrawer: React.FC = () => {
                   </button>
                   <button
                     type="button"
-                    onClick={() => setOrderType("delivery")}
+                    onClick={() => setCheckoutInfo({ orderType: "delivery" })}
                     className={`py-1.5 rounded-lg transition-all ${
                       orderType === "delivery" ? "bg-white text-stone-900 shadow-sm" : "text-stone-600"
                     }`}
@@ -340,7 +414,7 @@ export const CartDrawer: React.FC = () => {
                     type="text"
                     placeholder="Alamat Pengiriman Lengkap..."
                     value={deliveryAddress}
-                    onChange={(e) => setDeliveryAddress(e.target.value)}
+                    onChange={(e) => setCheckoutInfo({ deliveryAddress: e.target.value })}
                     className="w-full px-3 py-2 text-xs rounded-xl border border-stone-300 bg-white focus:outline-none focus:ring-1 focus:ring-amber-500"
                   />
                 )}
@@ -350,7 +424,7 @@ export const CartDrawer: React.FC = () => {
                     type="text"
                     placeholder="Nomor Meja..."
                     value={tableNumber}
-                    onChange={(e) => setTableNumber(e.target.value)}
+                    onChange={(e) => setCheckoutInfo({ tableNumber: e.target.value })}
                     className="w-full px-3 py-2 text-xs rounded-xl border border-stone-300 bg-white focus:outline-none focus:ring-1 focus:ring-amber-500"
                   />
                 )}
@@ -359,13 +433,13 @@ export const CartDrawer: React.FC = () => {
                   type="text"
                   placeholder="Catatan tambahan (opsional)..."
                   value={notes}
-                  onChange={(e) => setNotes(e.target.value)}
+                  onChange={(e) => setCheckoutInfo({ notes: e.target.value })}
                   className="w-full px-3 py-2 text-xs rounded-xl border border-stone-300 bg-white focus:outline-none focus:ring-1 focus:ring-amber-500"
                 />
 
-                {/* Subtotal & Checkout Button */}
-                <div className="pt-2">
-                  <div className="flex items-center justify-between text-sm mb-3">
+                {/* Subtotal & Dual Checkout Buttons (WhatsApp & Telegram Bot) */}
+                <div className="pt-2 space-y-2.5">
+                  <div className="flex items-center justify-between text-sm">
                     <span className="font-bold text-stone-600">Total Pembayaran:</span>
                     <span className="font-black text-lg text-amber-600">
                       {formatRupiahShort(totalAmount)}
@@ -377,8 +451,18 @@ export const CartDrawer: React.FC = () => {
                     disabled={isSubmitting}
                     className="w-full py-3.5 rounded-full bg-emerald-600 hover:bg-emerald-700 text-white font-extrabold text-xs uppercase tracking-wider shadow-lg shadow-emerald-600/25 active:scale-95 transition-all flex items-center justify-center gap-2"
                   >
-                    <Send className="w-4 h-4" />
+                    <MessageCircle className="w-4 h-4 fill-white" />
                     <span>PESAN SEKARANG VIA WHATSAPP</span>
+                  </button>
+
+                  <button
+                    type="button"
+                    disabled={isSubmitting}
+                    onClick={() => handleCheckoutChannel("telegram")}
+                    className="w-full py-3 rounded-full bg-sky-500 hover:bg-sky-600 text-white font-extrabold text-xs uppercase tracking-wider shadow-md shadow-sky-500/20 active:scale-95 transition-all flex items-center justify-center gap-2"
+                  >
+                    <Send className="w-4 h-4" />
+                    <span>PESAN VIA TELEGRAM (@GurihGacorBot)</span>
                   </button>
                 </div>
               </form>

@@ -12,6 +12,7 @@ interface CreateOrderInput {
   notes?: string;
   items: CartItem[];
   totalAmount: number;
+  paymentMethod?: "Direct WhatsApp" | "Direct Telegram";
 }
 
 const ALLOWED_ORDER_STATUSES = [
@@ -20,8 +21,31 @@ const ALLOWED_ORDER_STATUSES = [
   "preparing",
   "ready",
   "delivered",
+  "completed",
   "cancelled",
 ] as const;
+
+function resolveServerVerifiedUnitPrice(item: CartItem): number {
+  const sambalOrSize = String(item.selectedSambal || "").toLowerCase();
+  let basePrice = 5000;
+
+  if (sambalOrSize.includes("large")) {
+    basePrice = 15000;
+  } else if (sambalOrSize.includes("medium")) {
+    basePrice = 10000;
+  } else if (sambalOrSize.includes("small")) {
+    basePrice = 5000;
+  } else {
+    const rawPrice = Number(item.product?.price) || Number(item.itemTotal) || 5000;
+    basePrice = Math.max(5000, rawPrice);
+  }
+
+  const addonsCost = Array.isArray(item.selectedAddons)
+    ? item.selectedAddons.reduce((sum, addon) => sum + Math.max(0, Number(addon?.price) || 0), 0)
+    : 0;
+
+  return basePrice + addonsCost;
+}
 
 export const orderService = {
   async createOrder(input: CreateOrderInput): Promise<{ success: boolean; orderId?: string; orderNumber?: string; error?: string }> {
@@ -32,12 +56,7 @@ export const orderService = {
       let verifiedTotalAmount = 0;
       const orderItemsJson = input.items.map((item) => {
         const qty = Math.max(1, Math.min(50, Math.floor(Number(item.quantity) || 1)));
-        let unitPrice = Number(item.itemTotal) || 0;
-        
-        // Ensure strictly positive price per portion
-        if (unitPrice < 500) {
-          unitPrice = 5000;
-        }
+        const unitPrice = resolveServerVerifiedUnitPrice(item);
 
         const subtotal = unitPrice * qty;
         verifiedTotalAmount += subtotal;
@@ -55,7 +74,8 @@ export const orderService = {
       });
 
       // Use verified server-calculated total
-      const finalTotalAmount = verifiedTotalAmount > 0 ? verifiedTotalAmount : Math.max(0, Number(input.totalAmount) || 0);
+      const finalTotalAmount = verifiedTotalAmount > 0 ? verifiedTotalAmount : Math.max(5000, Number(input.totalAmount) || 5000);
+      const paymentMethod = input.paymentMethod === "Direct Telegram" ? "Direct Telegram" : "Direct WhatsApp";
 
       // 2. Generate sequential order ID and insert into orders table
       const nextOrderId = await getNextSequentialId("orders", "order");
@@ -74,7 +94,7 @@ export const orderService = {
             notes: input.notes ? input.notes.trim().slice(0, 500) : null,
             total_amount: finalTotalAmount,
             status: "pending",
-            payment_method: "Direct WhatsApp",
+            payment_method: paymentMethod,
             created_at: new Date().toISOString(),
           },
         ])

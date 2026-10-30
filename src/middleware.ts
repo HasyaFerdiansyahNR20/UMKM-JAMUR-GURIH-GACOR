@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 import { ADMIN_SESSION_COOKIE, verifySessionToken } from "./lib/session";
+import { safeCompareStrings } from "./lib/rateLimit";
 
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
@@ -38,8 +39,7 @@ export async function middleware(request: NextRequest) {
     const adminKey = request.headers.get("x-admin-key");
     const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
 
-    const isServiceRoleKeyValid =
-      Boolean(serviceRoleKey && adminKey && adminKey === serviceRoleKey);
+    const isServiceRoleKeyValid = safeCompareStrings(adminKey, serviceRoleKey);
 
     const isAuthorized = isServiceRoleKeyValid || hasValidAdminSession;
 

@@ -105,6 +105,8 @@ export const HeroSection: React.FC<HeroSectionProps> = ({ featuredProduct }) => 
                 <img
                   src={productImage}
                   alt="Jamur Crispy Original Gurih Gacor"
+                  width={600}
+                  height={450}
                   loading="eager"
                   fetchPriority="high"
                   decoding="async"
@@ -161,6 +163,8 @@ export const HeroSection: React.FC<HeroSectionProps> = ({ featuredProduct }) => 
                 <img
                   src="/logo-gurih-gacor.webp"
                   alt="Maskot"
+                  width={20}
+                  height={20}
                   loading="eager"
                   decoding="async"
                   className="w-full h-full object-cover"
