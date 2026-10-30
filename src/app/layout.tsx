@@ -3,7 +3,7 @@ import "./globals.css";
 import { AppShell } from "@/components/AppShell";
 
 export const metadata: Metadata = {
-  metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL || "https://gurihgacor.vercel.app"),
+  metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL || "https://jamurgurihgacor.store"),
   title: "UMKM Gurih Gacor — Kriuk-Kriuk Nya Bikin Ngiler!",
   description:
     "Website Resmi Katalog Kuliner UMKM Gurih Gacor. Sajian jamur tiram crispy gurih renyah bumbu 7 rempah Nusantara dalam varian Original, Pedas, Manis, dan Pedas Manis.",

@@ -11,8 +11,8 @@ Simpan informasi di bawah ini di catatan HP pengelola toko:
 
 | Keperluan | Link / Informasi | Keterangan |
 | :--- | :--- | :--- |
-| **Website Katalog (Untuk Pelanggan)** | `https://jamur-gurih-gacor.vercel.app` | Bagikan link ini di bio Instagram, status WA, atau QR Code gerobak/meja. |
-| **Halaman Login Admin (Owner & Karyawan)** | `https://jamur-gurih-gacor.vercel.app/admin` | Halaman khusus pengelola untuk mengatur stok, menu, promo, dan pesanan. |
+| **Website Katalog (Untuk Pelanggan)** | `https://jamurgurihgacor.store` | Bagikan link ini di bio Instagram, status WA, atau QR Code gerobak/meja. |
+| **Halaman Login Admin (Owner & Karyawan)** | `https://jamurgurihgacor.store/admin` | Halaman khusus pengelola untuk mengatur stok, menu, promo, dan pesanan. |
 | **Email Login Admin 1 (Utama)** | `admin@gurihgacor.com` | Email login untuk operasional toko. |
 | **Email Login Admin 2 (Cadangan)** | `fnrhasya@gmail.com` | Email login alternatif pengelola. |
 | **Kata Sandi (Password) Admin** | `gacor123` | **Rahasiakan!** Jangan berikan kepada selain Owner & Karyawan. |
@@ -21,7 +21,7 @@ Simpan informasi di bawah ini di catatan HP pengelola toko:
 | **Instagram Resmi** | `@gurih.gacor` | Terhubung langsung dari tombol Instagram di website. |
 
 > **Tips Cepat di HP Android / iPhone:**
-> Buka halaman `https://jamur-gurih-gacor.vercel.app/admin` di browser Chrome / Safari HP toko, lalu pilih menu **Titik Tiga (⋮) → "Tambahkan ke Layar Utama" (Add to Home Screen)**. Dengan begitu, ikon Admin Gurih Gacor akan muncul di layar HP seperti aplikasi biasa!
+> Buka halaman `https://jamurgurihgacor.store/admin` di browser Chrome / Safari HP toko, lalu pilih menu **Titik Tiga (⋮) → "Tambahkan ke Layar Utama" (Add to Home Screen)**. Dengan begitu, ikon Admin Gurih Gacor akan muncul di layar HP seperti aplikasi biasa!
 
 ---
 
@@ -53,7 +53,7 @@ Berikut adalah urutan langkah kerja harian yang perlu dilakukan oleh karyawan da
 
 ## 3. Panduan Lengkap Fitur Dasbor Admin
 
-Setelah berhasil login di `https://jamur-gurih-gacor.vercel.app/admin`, Anda akan melihat **4 Tab Menu Utama** di bagian atas halaman:
+Setelah berhasil login di `https://jamurgurihgacor.store/admin`, Anda akan melihat **4 Tab Menu Utama** di bagian atas halaman:
 
 ---
 
