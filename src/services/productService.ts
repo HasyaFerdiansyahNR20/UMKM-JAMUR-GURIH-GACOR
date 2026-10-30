@@ -71,7 +71,7 @@ export const productService = {
     try {
       const { error } = await supabaseAdmin
         .from("products")
-        .update({ availability_status: newStatus, updated_at: new Date().toISOString() })
+        .update({ availability_status: newStatus === "available" ? "available" : "sold_out", updated_at: new Date().toISOString() })
         .eq("id", id);
 
       if (error) throw error;
@@ -95,7 +95,7 @@ export const productService = {
         original_price: productData.original_price ? Number(productData.original_price) : null,
         category_id: productData.category_id || null,
         image_url: String(productData.image_url || "").trim(),
-        availability_status: productData.availability_status || "available",
+        availability_status: productData.availability_status === "unavailable" ? "sold_out" : (productData.availability_status || "available"),
         spicy_level: Number(productData.spicy_level) || 0,
         is_bestseller: Boolean(productData.is_bestseller),
         is_promo: Boolean(productData.is_promo),
@@ -137,7 +137,7 @@ export const productService = {
       if (productData.original_price !== undefined) sanitizedRecord.original_price = productData.original_price ? Number(productData.original_price) : null;
       if (productData.category_id !== undefined) sanitizedRecord.category_id = productData.category_id;
       if (productData.image_url !== undefined) sanitizedRecord.image_url = String(productData.image_url).trim();
-      if (productData.availability_status !== undefined) sanitizedRecord.availability_status = productData.availability_status;
+      if (productData.availability_status !== undefined) sanitizedRecord.availability_status = productData.availability_status === "unavailable" ? "sold_out" : productData.availability_status;
       if (productData.spicy_level !== undefined) sanitizedRecord.spicy_level = Number(productData.spicy_level);
       if (productData.is_bestseller !== undefined) sanitizedRecord.is_bestseller = Boolean(productData.is_bestseller);
       if (productData.is_promo !== undefined) sanitizedRecord.is_promo = Boolean(productData.is_promo);

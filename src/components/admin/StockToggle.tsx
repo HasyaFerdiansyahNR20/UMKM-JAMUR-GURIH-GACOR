@@ -17,7 +17,7 @@ export const StockToggle: React.FC<StockToggleProps> = ({ initialProducts, onSwi
 
   const handleToggle = async (productId: string, currentStatus: AvailabilityStatus | string) => {
     const nextStatus: AvailabilityStatus =
-      currentStatus === "available" ? "unavailable" : "available";
+      currentStatus === "available" ? "sold_out" : "available";
 
     setUpdatingId(productId);
 
