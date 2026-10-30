@@ -371,27 +371,27 @@ export const ProductManagement: React.FC<ProductManagementProps> = ({
               </div>
             </div>
 
-            {/* UPLOAD FOTO PRODUK + AUTO WEBP COMPRESSOR */}
+            {/* UPLOAD FOTO PRODUK (Minimal & Clean) */}
             <div>
               <label className="block text-xs font-bold text-stone-700 uppercase mb-1.5">
                 Foto Produk *
               </label>
 
-              <div className="p-3.5 rounded-2xl border border-stone-200 bg-stone-50/80 space-y-3">
-                <div className="flex flex-col sm:flex-row items-center gap-3.5">
+              <div className="p-3.5 rounded-2xl border border-stone-200 bg-stone-50/80 space-y-2.5">
+                <div className="flex items-center gap-4">
                   {/* Live Thumbnail Preview */}
-                  <div className="w-24 h-24 rounded-2xl overflow-hidden border-2 border-amber-300 bg-white shrink-0 shadow-sm relative">
+                  <div className="w-16 h-16 rounded-2xl overflow-hidden border border-stone-300 bg-white shrink-0 shadow-sm relative">
                     <img
                       src={imageUrl || "/products/jamur-crispy-original.webp"}
                       alt="Preview Foto Menu"
-                      width={96}
-                      height={96}
+                      width={64}
+                      height={64}
                       className="w-full h-full object-cover"
                     />
                   </div>
 
-                  {/* Upload Controls & Size Specification */}
-                  <div className="flex-1 w-full space-y-2 text-center sm:text-left">
+                  {/* Upload Button & Short Max 2 MB Note */}
+                  <div className="space-y-1.5">
                     <input
                       ref={fileInputRef}
                       type="file"
@@ -404,44 +404,17 @@ export const ProductManagement: React.FC<ProductManagementProps> = ({
                       type="button"
                       disabled={isUploadingImage}
                       onClick={() => fileInputRef.current?.click()}
-                      className="inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-amber-500 hover:bg-amber-600 text-white text-xs font-extrabold uppercase tracking-wider shadow-sm active:scale-95 transition-all cursor-pointer disabled:opacity-50"
+                      className="inline-flex items-center justify-center gap-2 px-4 py-2 rounded-xl bg-amber-500 hover:bg-amber-600 text-white text-xs font-extrabold uppercase tracking-wider shadow-sm active:scale-95 transition-all cursor-pointer disabled:opacity-50"
                     >
                       <Upload className="w-4 h-4" />
-                      <span>
-                        {isUploadingImage ? "Mengoptimasi & Upload..." : "Upload Foto dari HP / Laptop"}
-                      </span>
+                      <span>{isUploadingImage ? "MENGUPLOAD..." : "UPLOAD FOTO"}</span>
                     </button>
 
-                    {/* Ketentuan Ukuran Foto */}
-                    <div className="text-[11px] text-stone-600 leading-relaxed bg-amber-50/90 border border-amber-200/80 rounded-xl p-2.5">
-                      <p className="font-bold text-amber-900 flex items-center justify-center sm:justify-start gap-1">
-                        <Sparkles className="w-3.5 h-3.5 text-amber-600 shrink-0" />
-                        <span>Ketentuan Ukuran Foto (Agar Website Tidak Berat):</span>
-                      </p>
-                      <ul className="mt-1 space-y-0.5 text-stone-600 list-disc list-inside text-[10px] sm:text-[11px]">
-                        <li>
-                          <strong>Ukuran File Maksimal:</strong> <span className="font-bold text-stone-900">Maks. 2 MB</span> (Format: JPG, PNG, atau WebP)
-                        </li>
-                        <li>
-                          <strong>Resolusi Rekomendasi:</strong> <span className="font-bold text-stone-900">800 × 600 px</span> (Rasio 4:3 atau 1:1)
-                        </li>
-                        <li>
-                          <strong>Auto-Kompresi Ringan:</strong> Foto otomatis diperkecil ke format <strong>WebP (&lt; 100 KB)</strong> saat di-upload.
-                        </li>
-                      </ul>
-                    </div>
+                    <p className="text-[11px] font-medium text-stone-500">
+                      Upload Max 2 MB (JPG, PNG, WebP)
+                    </p>
                   </div>
                 </div>
-
-                {/* Hasil Optimasi WebP */}
-                {compressionInfo && (
-                  <div className="flex items-center gap-2 px-3 py-2 rounded-xl bg-emerald-50 border border-emerald-200 text-[11px] text-emerald-800 font-semibold">
-                    <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
-                    <span>
-                      Foto berhasil dioptimasi! Ukuran asli <strong>{compressionInfo.originalKB} KB</strong> → dikompres menjadi <strong>{compressionInfo.compressedKB} KB (WebP {compressionInfo.width}×{compressionInfo.height}px)</strong> ⚡
-                    </span>
-                  </div>
-                )}
 
                 {/* Error Message if file > 2MB or invalid format */}
                 {uploadError && (
@@ -450,31 +423,6 @@ export const ProductManagement: React.FC<ProductManagementProps> = ({
                     <span>{uploadError}</span>
                   </div>
                 )}
-
-                {/* Quick Pick Preset Photos */}
-                <div className="pt-2 border-t border-stone-200/80 flex flex-wrap items-center gap-1.5">
-                  <span className="text-[10px] font-bold text-stone-500 uppercase mr-1">
-                    Atau pakai foto bawaan:
-                  </span>
-                  {PRESET_PRODUCT_PHOTOS.map((preset) => (
-                    <button
-                      key={preset.url}
-                      type="button"
-                      onClick={() => {
-                        setImageUrl(preset.url);
-                        setCompressionInfo(null);
-                        setUploadError(null);
-                      }}
-                      className={`px-2.5 py-1 rounded-lg text-[10px] font-bold border transition-all ${
-                        imageUrl === preset.url
-                          ? "bg-amber-500 text-white border-amber-500"
-                          : "bg-white text-stone-700 border-stone-300 hover:bg-stone-100"
-                      }`}
-                    >
-                      {preset.label}
-                    </button>
-                  ))}
-                </div>
               </div>
             </div>
 
