@@ -147,13 +147,13 @@ export const ContactSection: React.FC = () => {
                   <span>@gurih.gacor</span>
                 </a>
                 <a
-                  href="https://tiktok.com"
+                  href="https://www.tiktok.com/@gurih.gacor"
                   target="_blank"
                   rel="noopener noreferrer"
                   className="flex items-center gap-2 px-4 py-2 rounded-2xl bg-stone-100 border border-stone-200 text-stone-800 text-xs font-extrabold hover:shadow-sm transition-all"
                 >
                   <span className="text-xs font-black">TikTok:</span>
-                  <span>@gurihgacor.official</span>
+                  <span>@gurih.gacor</span>
                 </a>
               </div>
             </div>

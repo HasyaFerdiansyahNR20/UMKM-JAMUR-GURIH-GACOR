@@ -71,11 +71,11 @@ export const Footer: React.FC = () => {
             <Instagram className="w-4 h-4" />
           </a>
           <a
-            href="https://tiktok.com"
+            href="https://www.tiktok.com/@gurih.gacor"
             target="_blank"
             rel="noopener noreferrer"
             className="w-10 h-10 rounded-full bg-stone-800 hover:bg-stone-700 text-white flex items-center justify-center transition-colors shadow border border-stone-700 text-xs font-black"
-            aria-label="TikTok"
+            aria-label="TikTok @gurih.gacor"
           >
             TT
           </a>
