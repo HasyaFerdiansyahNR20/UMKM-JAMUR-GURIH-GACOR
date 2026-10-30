@@ -1,10 +1,12 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useRef } from "react";
 import { Promotion } from "@/types";
-import { Plus, Trash2, Tag, CheckCircle2, XCircle } from "lucide-react";
+import { Plus, Trash2, CheckCircle2, XCircle, Upload, AlertCircle, Sparkles } from "lucide-react";
 import { Modal } from "@/components/ui/Modal";
 import { createPromotionAction, togglePromotionStatusAction, deletePromotionAction } from "@/actions/promotions";
+import { uploadProductImageAction } from "@/actions/upload";
+import { validateAndCompressImage } from "@/lib/imageCompressor";
 
 interface BannerManagementProps {
   initialPromotions: Promotion[];
@@ -13,24 +15,79 @@ interface BannerManagementProps {
 export const BannerManagement: React.FC<BannerManagementProps> = ({ initialPromotions }) => {
   const [promotions, setPromotions] = useState<Promotion[]>(initialPromotions);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   // Form states
   const [title, setTitle] = useState("");
   const [subtitle, setSubtitle] = useState("");
   const [badge, setBadge] = useState("PROMO SPESIAL");
   const [discountInfo, setDiscountInfo] = useState("Hemat Rp 5.000");
-  const [bannerUrl, setBannerUrl] = useState("");
+  const [bannerUrl, setBannerUrl] = useState("/gallery/kemasan-jamur-crispy-tiga-varian.webp");
   const [ctaText, setCtaText] = useState("Pesan Promo Sekarang");
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  // Upload states
+  const [isUploadingImage, setIsUploadingImage] = useState(false);
+  const [uploadError, setUploadError] = useState<string | null>(null);
+  const [compressionInfo, setCompressionInfo] = useState<{
+    originalKB: number;
+    compressedKB: number;
+    width: number;
+    height: number;
+  } | null>(null);
 
   const handleOpenAdd = () => {
     setTitle("");
     setSubtitle("");
     setBadge("PROMO SPESIAL");
     setDiscountInfo("Hemat Rp 5.000");
-    setBannerUrl("https://images.unsplash.com/photo-1546069901-ba9599a7e63c?auto=format&fit=crop&w=1200&q=80");
+    setBannerUrl("/gallery/kemasan-jamur-crispy-tiga-varian.webp");
     setCtaText("Pesan Promo Sekarang");
+    setUploadError(null);
+    setCompressionInfo(null);
     setIsModalOpen(true);
+  };
+
+  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const selectedFile = e.target.files?.[0];
+    if (!selectedFile) return;
+
+    setUploadError(null);
+    setIsUploadingImage(true);
+
+    try {
+      const compressed = await validateAndCompressImage(selectedFile, {
+        maxWidth: 1200,
+        maxHeight: 600,
+        quality: 0.82,
+      });
+
+      setCompressionInfo({
+        originalKB: compressed.originalSizeKB,
+        compressedKB: compressed.compressedSizeKB,
+        width: compressed.width,
+        height: compressed.height,
+      });
+
+      setBannerUrl(compressed.dataUrl);
+
+      const formData = new FormData();
+      formData.append("file", compressed.file);
+      formData.append("folder", "banners");
+
+      const uploadRes = await uploadProductImageAction(formData);
+      if (uploadRes.success && uploadRes.url) {
+        setBannerUrl(uploadRes.url);
+      }
+    } catch (err: any) {
+      setUploadError(err.message || "Gagal memproses gambar banner.");
+      setCompressionInfo(null);
+    } finally {
+      setIsUploadingImage(false);
+      if (fileInputRef.current) {
+        fileInputRef.current.value = "";
+      }
+    }
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -46,7 +103,7 @@ export const BannerManagement: React.FC<BannerManagementProps> = ({ initialPromo
         discount_info: discountInfo,
         banner_url: bannerUrl,
         cta_text: ctaText,
-        link_url: "#catalog",
+        link_url: "#katalog",
         is_active: true,
       };
 
@@ -116,6 +173,8 @@ export const BannerManagement: React.FC<BannerManagementProps> = ({ initialPromo
               <img
                 src={promo.banner_url}
                 alt={promo.title}
+                width={600}
+                height={144}
                 loading="lazy"
                 decoding="async"
                 className="w-full h-full object-cover opacity-60"
@@ -217,17 +276,70 @@ export const BannerManagement: React.FC<BannerManagementProps> = ({ initialPromo
               </div>
             </div>
 
+            {/* UPLOAD GAMBAR BANNER + AUTO WEBP */}
             <div>
-              <label className="block text-xs font-bold text-stone-700 uppercase mb-1">
-                URL Gambar Background *
+              <label className="block text-xs font-bold text-stone-700 uppercase mb-1.5">
+                Gambar Background Banner *
               </label>
-              <input
-                type="url"
-                required
-                value={bannerUrl}
-                onChange={(e) => setBannerUrl(e.target.value)}
-                className="w-full px-3.5 py-2.5 rounded-xl border border-stone-300 text-xs focus:ring-2 focus:ring-amber-500"
-              />
+
+              <div className="p-3.5 rounded-2xl border border-stone-200 bg-stone-50/80 space-y-3">
+                <div className="relative h-28 w-full rounded-xl overflow-hidden border border-amber-300 bg-stone-900">
+                  <img
+                    src={bannerUrl}
+                    alt="Preview Banner"
+                    width={600}
+                    height={200}
+                    className="w-full h-full object-cover opacity-80"
+                  />
+                </div>
+
+                <input
+                  ref={fileInputRef}
+                  type="file"
+                  accept="image/jpeg,image/jpg,image/png,image/webp"
+                  onChange={handleFileChange}
+                  className="hidden"
+                />
+
+                <button
+                  type="button"
+                  disabled={isUploadingImage}
+                  onClick={() => fileInputRef.current?.click()}
+                  className="w-full py-2.5 px-4 rounded-xl bg-amber-500 hover:bg-amber-600 text-white text-xs font-extrabold uppercase tracking-wider shadow-sm flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50"
+                >
+                  <Upload className="w-4 h-4" />
+                  <span>
+                    {isUploadingImage ? "Mengoptimasi & Upload..." : "Upload Foto Banner dari HP / Laptop"}
+                  </span>
+                </button>
+
+                <div className="text-[11px] text-stone-600 bg-amber-50/90 border border-amber-200/80 rounded-xl p-2.5">
+                  <p className="font-bold text-amber-900 flex items-center gap-1">
+                    <Sparkles className="w-3.5 h-3.5 text-amber-600 shrink-0" />
+                    <span>Ketentuan Ukuran Foto Banner:</span>
+                  </p>
+                  <ul className="mt-1 space-y-0.5 text-stone-600 list-disc list-inside text-[10px]">
+                    <li><strong>Ukuran File Maksimal:</strong> Maks. 2 MB (JPG, PNG, WebP)</li>
+                    <li><strong>Resolusi Ideal:</strong> 1200 × 400 px (Otomatis dikompres ke WebP ringan)</li>
+                  </ul>
+                </div>
+
+                {compressionInfo && (
+                  <div className="flex items-center gap-2 px-3 py-2 rounded-xl bg-emerald-50 border border-emerald-200 text-[11px] text-emerald-800 font-semibold">
+                    <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
+                    <span>
+                      Dioptimasi: {compressionInfo.originalKB} KB → <strong>{compressionInfo.compressedKB} KB (WebP)</strong> ⚡
+                    </span>
+                  </div>
+                )}
+
+                {uploadError && (
+                  <div className="flex items-center gap-2 px-3 py-2 rounded-xl bg-red-50 border border-red-200 text-[11px] text-red-600 font-semibold">
+                    <AlertCircle className="w-4 h-4 text-red-500 shrink-0" />
+                    <span>{uploadError}</span>
+                  </div>
+                )}
+              </div>
             </div>
 
             <div className="flex justify-end gap-3 pt-3 border-t border-stone-200">
@@ -240,8 +352,8 @@ export const BannerManagement: React.FC<BannerManagementProps> = ({ initialPromo
               </button>
               <button
                 type="submit"
-                disabled={isSubmitting}
-                className="px-6 py-2 rounded-full bg-amber-500 hover:bg-amber-600 text-white text-xs font-bold uppercase tracking-wider shadow-md"
+                disabled={isSubmitting || isUploadingImage}
+                className="px-6 py-2 rounded-full bg-amber-500 hover:bg-amber-600 text-white text-xs font-bold uppercase tracking-wider shadow-md disabled:opacity-50"
               >
                 {isSubmitting ? "Menyimpan..." : "Simpan Banner"}
               </button>

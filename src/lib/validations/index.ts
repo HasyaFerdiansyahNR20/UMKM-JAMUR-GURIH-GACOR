@@ -1,16 +1,20 @@
 import { z } from "zod";
 
 /**
- * Validates that a string is a safe image URL (http://, https://) or an internal static path (/...)
- * Blocks dangerous schemes like javascript:, data:, vbscript: (OWASP A03:2021)
+ * Validates that a string is a safe image URL (http://, https://), an internal static path (/...),
+ * or a strictly typed compressed image data URL (data:image/webp|jpeg|png;base64,...).
+ * Blocks dangerous schemes like javascript:, data:text/html, vbscript: (OWASP A03:2021)
  */
 const safeImageUrlSchema = z
   .string()
-  .min(1, "URL Gambar wajib diisi")
+  .min(1, "Foto produk wajib diunggah atau dipilih")
   .refine(
     (val) => {
       const trimmed = val.trim();
       if (trimmed.startsWith("/") && !trimmed.startsWith("//")) return true;
+      if (/^data:image\/(webp|jpeg|jpg|png);base64,[A-Za-z0-9+/=]+$/i.test(trimmed)) {
+        return true;
+      }
       try {
         const parsed = new URL(trimmed);
         return parsed.protocol === "https:" || parsed.protocol === "http:";
@@ -18,7 +22,7 @@ const safeImageUrlSchema = z
         return false;
       }
     },
-    { message: "URL Gambar harus berupa link https:// yang valid atau path internal (/...)" }
+    { message: "Format foto tidak valid (unggah foto JPG/PNG/WebP maks. 2 MB)" }
   );
 
 /**
