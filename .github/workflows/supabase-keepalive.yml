@@ -13,6 +13,6 @@ jobs:
       - name: Ping Vercel Keep-Alive Endpoint
         run: |
           echo "Pinging UMKM Gurih Gacor Supabase Keep-Alive endpoint..."
-          curl -sS --fail --max-time 30 "https://umkm-jamur-gurih-gacor.vercel.app/api/keep-alive"
+          curl -sSL --fail --max-time 30 "https://jamurgurihgacor.store/api/keep-alive" || curl -sSL --fail --max-time 30 "https://jamur-gurih-gacor.vercel.app/api/keep-alive"
           echo ""
           echo "Keep-alive ping completed successfully."
