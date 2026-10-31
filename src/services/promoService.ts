@@ -1,11 +1,11 @@
-import { supabase, supabaseAdmin, FALLBACK_PROMOTIONS } from "@/db";
+import { supabase, supabaseAdmin } from "@/db";
 import { Promotion } from "@/types";
 import { getNextSequentialId } from "@/lib/idGenerator";
 
 export const promoService = {
   async getPromotions(): Promise<Promotion[]> {
     try {
-      const { data, error } = await supabase
+      const { data, error } = await supabaseAdmin
         .from("promotions")
         .select("*")
         .eq("is_active", true)
@@ -38,7 +38,7 @@ export const promoService = {
     }
   },
 
-  async createPromotion(promoData: Partial<Promotion>): Promise<{ success: boolean; error?: string }> {
+  async createPromotion(promoData: Partial<Promotion>): Promise<{ success: boolean; data?: Promotion; error?: string }> {
     try {
       const generatedId = promoData.id || await getNextSequentialId("promotions", "promo");
 
@@ -56,10 +56,14 @@ export const promoService = {
         updated_at: new Date().toISOString(),
       };
 
-      const { error } = await supabaseAdmin.from("promotions").insert([sanitizedRecord]);
+      const { data, error } = await supabaseAdmin
+        .from("promotions")
+        .insert([sanitizedRecord])
+        .select()
+        .single();
 
       if (error) throw error;
-      return { success: true };
+      return { success: true, data: (data || sanitizedRecord) as Promotion };
     } catch (err: any) {
       return { success: false, error: err.message };
     }

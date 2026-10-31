@@ -107,9 +107,12 @@ export const BannerManagement: React.FC<BannerManagementProps> = ({ initialPromo
         is_active: true,
       };
 
-      await createPromotionAction(payload);
+      const res = await createPromotionAction(payload);
+      if (!res.success) {
+        throw new Error(res.error || "Gagal menyimpan banner.");
+      }
       setPromotions((prev) => [
-        { id: `promo-${Date.now()}`, ...payload } as Promotion,
+        (res.data || { id: `promo-${Date.now()}`, ...payload }) as Promotion,
         ...prev,
       ]);
       setIsModalOpen(false);
@@ -123,22 +126,32 @@ export const BannerManagement: React.FC<BannerManagementProps> = ({ initialPromo
 
   const handleToggle = async (id: string, currentActive: boolean) => {
     try {
-      await togglePromotionStatusAction(id, !currentActive);
+      const res = await togglePromotionStatusAction(id, !currentActive);
+      if (!res.success) {
+        alert("Gagal mengubah status banner.");
+        return;
+      }
       setPromotions((prev) =>
         prev.map((p) => (p.id === id ? { ...p, is_active: !currentActive } : p))
       );
     } catch (err) {
       console.error(err);
+      alert("Gagal mengubah status banner.");
     }
   };
 
   const handleDelete = async (id: string) => {
     if (!confirm("Hapus banner promo ini?")) return;
     try {
-      await deletePromotionAction(id);
+      const res = await deletePromotionAction(id);
+      if (!res.success) {
+        alert("Gagal menghapus banner.");
+        return;
+      }
       setPromotions((prev) => prev.filter((p) => p.id !== id));
     } catch (err) {
       console.error(err);
+      alert("Gagal menghapus banner.");
     }
   };
 

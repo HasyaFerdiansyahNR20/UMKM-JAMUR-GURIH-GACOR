@@ -13,7 +13,7 @@ import { TestimonialsSection } from "@/components/TestimonialsSection";
 import { ContactSection } from "@/components/ContactSection";
 
 // Revalidate page data every 30 seconds
-export const revalidate = 30;
+export const dynamic = "force-dynamic";
 
 export default async function HomePage() {
   const [products, categories, promotions, settings] = await Promise.all([
