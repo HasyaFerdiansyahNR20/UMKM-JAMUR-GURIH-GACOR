@@ -1,5 +1,4 @@
 import React from "react";
-import Link from "next/link";
 import { Phone, Instagram, Clock, MapPin } from "lucide-react";
 
 export const Footer: React.FC = () => {
@@ -110,10 +109,6 @@ export const Footer: React.FC = () => {
           <a href="#kontak" className="hover:text-amber-400 transition-colors">
             Kontak
           </a>
-          <span className="text-stone-700">•</span>
-          <Link href="/login" className="hover:text-amber-400 transition-colors">
-            Staff Login
-          </Link>
         </div>
 
         {/* Copyright notice */}
