@@ -1,13 +1,35 @@
-import React from "react";
+"use client";
+
+import React, { useEffect, useState } from "react";
 import { Phone, Instagram, Clock, MapPin } from "lucide-react";
+import { getStoreSettingsAction, StoreSettings } from "@/actions/settings";
 
 export const Footer: React.FC = () => {
-  const whatsappPhone = process.env.NEXT_PUBLIC_WHATSAPP_NUMBER || "62895634949189";
+  const [settings, setSettings] = useState<StoreSettings | null>(null);
+
+  useEffect(() => {
+    getStoreSettingsAction()
+      .then((res) => setSettings(res))
+      .catch(() => {});
+  }, []);
+
+  const whatsappPhone =
+    settings?.whatsappNumber ||
+    process.env.NEXT_PUBLIC_WHATSAPP_NUMBER ||
+    "62895634949189";
+  const tagline = settings?.tagline || "KRIUK-KRIUK NYA BIKIN NGILER!";
+  const operatingHours = settings?.operatingHours || "09.00 – 21.00 WIB";
+  const addressShort =
+    settings?.addressShort ||
+    "Jl. Reni Jaya Utara 1 Gg. H. Muntir No.4, Tangerang Selatan";
+  const mapsUrl = settings?.mapsUrl || "https://maps.app.goo.gl/3vqf68ptrZtxmxbo7";
+  const instagramUrl =
+    settings?.instagramUrl || "https://www.instagram.com/gurih.gacor/";
+  const tiktokUrl = settings?.tiktokUrl || "https://www.tiktok.com/@gurih.gacor";
 
   return (
     <footer className="bg-stone-900 text-white pt-16 pb-12 border-t border-stone-800">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-        
         {/* Brand Logo & Slogan */}
         <div className="mb-8 flex flex-col items-center">
           <div className="w-16 h-16 rounded-2xl overflow-hidden bg-amber-50 p-1 border-2 border-amber-400 mb-3 shadow-lg">
@@ -25,7 +47,7 @@ export const Footer: React.FC = () => {
             GURIH<span className="text-amber-500">GACOR</span>
           </h3>
           <div className="inline-flex items-center px-3.5 py-1 rounded-full bg-stone-800 text-amber-400 text-xs font-bold uppercase tracking-wider mb-4 border border-stone-700">
-            <span>&ldquo;KRIUK-KRIUK NYA BIKIN NGILER!&rdquo;</span>
+            <span>&ldquo;{tagline}&rdquo;</span>
           </div>
           <p className="text-stone-400 text-xs sm:text-sm max-w-lg mx-auto leading-relaxed">
             UMKM kuliner spesialis jamur crispy bumbu 7 rempah nusantara. Renyah tahan lama, higienis, dan terjangkau untuk semua penikmat kriuk.
@@ -36,16 +58,18 @@ export const Footer: React.FC = () => {
         <div className="flex flex-wrap items-center justify-center gap-6 mb-8 text-xs text-stone-300">
           <div className="flex items-center gap-2 bg-stone-800/80 px-4 py-2 rounded-full border border-stone-700">
             <Clock className="w-4 h-4 text-amber-400" />
-            <span>Buka Setiap Hari: <strong>09.00 – 21.00 WIB</strong></span>
+            <span>
+              Buka Setiap Hari: <strong>{operatingHours}</strong>
+            </span>
           </div>
           <a
-            href="https://maps.app.goo.gl/3vqf68ptrZtxmxbo7"
+            href={mapsUrl}
             target="_blank"
             rel="noopener noreferrer"
             className="flex items-center gap-2 bg-stone-800/80 hover:bg-stone-700 px-4 py-2 rounded-full border border-stone-700 transition-colors"
           >
             <MapPin className="w-4 h-4 text-rose-400" />
-            <span>Jl. Reni Jaya Utara 1 Gg. H. Muntir No.4, Tangerang Selatan</span>
+            <span>{addressShort}</span>
           </a>
         </div>
 
@@ -61,20 +85,20 @@ export const Footer: React.FC = () => {
             <Phone className="w-4 h-4" />
           </a>
           <a
-            href="https://www.instagram.com/gurih.gacor/"
+            href={instagramUrl}
             target="_blank"
             rel="noopener noreferrer"
             className="w-10 h-10 rounded-full bg-stone-800 hover:bg-pink-600 text-white flex items-center justify-center transition-colors shadow border border-stone-700"
-            aria-label="Instagram @gurih.gacor"
+            aria-label="Instagram"
           >
             <Instagram className="w-4 h-4" />
           </a>
           <a
-            href="https://www.tiktok.com/@gurih.gacor"
+            href={tiktokUrl}
             target="_blank"
             rel="noopener noreferrer"
             className="w-10 h-10 rounded-full bg-stone-800 hover:bg-stone-700 text-white flex items-center justify-center transition-colors shadow border border-stone-700 text-xs font-black"
-            aria-label="TikTok @gurih.gacor"
+            aria-label="TikTok"
           >
             TT
           </a>
@@ -115,7 +139,6 @@ export const Footer: React.FC = () => {
         <p className="text-[11px] text-stone-500 font-medium">
           Copyright &copy; 2026 UMKM Gurih Gacor. All rights reserved.
         </p>
-
       </div>
     </footer>
   );

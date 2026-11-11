@@ -3,7 +3,7 @@
 import { promoService } from "@/services/promoService";
 import { Promotion } from "@/types";
 import { revalidatePath } from "next/cache";
-import { requireAdminSession } from "@/lib/serverAuth";
+import { requireAdminSession, requireOwnerSession } from "@/lib/serverAuth";
 import { promoSchema } from "@/lib/validations";
 
 export async function fetchPromotionsAction() {
@@ -16,7 +16,7 @@ export async function fetchAllPromotionsAction() {
 }
 
 export async function createPromotionAction(promoData: Partial<Promotion>) {
-  await requireAdminSession();
+  await requireOwnerSession();
 
   const validation = promoSchema.safeParse(promoData);
   if (!validation.success) {
@@ -33,7 +33,7 @@ export async function createPromotionAction(promoData: Partial<Promotion>) {
 }
 
 export async function togglePromotionStatusAction(id: string, isActive: boolean) {
-  await requireAdminSession();
+  await requireOwnerSession();
 
   if (!id || typeof id !== "string") {
     throw new Error("ID promo wajib diisi.");
@@ -46,7 +46,7 @@ export async function togglePromotionStatusAction(id: string, isActive: boolean)
 }
 
 export async function deletePromotionAction(id: string) {
-  await requireAdminSession();
+  await requireOwnerSession();
 
   if (!id || typeof id !== "string") {
     throw new Error("ID promo wajib diisi.");

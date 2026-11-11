@@ -3,7 +3,7 @@
 import { productService } from "@/services/productService";
 import { AvailabilityStatus, Product } from "@/types";
 import { revalidatePath } from "next/cache";
-import { requireAdminSession } from "@/lib/serverAuth";
+import { requireAdminSession, requireOwnerSession } from "@/lib/serverAuth";
 import { productSchema } from "@/lib/validations";
 
 export async function fetchProductsAction() {
@@ -16,7 +16,7 @@ export async function fetchCategoriesAction() {
 
 export async function toggleStockAction(id: string, newStatus: AvailabilityStatus) {
   await requireAdminSession();
-  
+
   const allowedStatuses: AvailabilityStatus[] = ["available", "unavailable", "sold_out"];
   if (!allowedStatuses.includes(newStatus)) {
     throw new Error(`Status produk '${newStatus}' tidak valid.`);
@@ -29,9 +29,8 @@ export async function toggleStockAction(id: string, newStatus: AvailabilityStatu
 }
 
 export async function createProductAction(productData: Partial<Product>) {
-  await requireAdminSession();
+  await requireOwnerSession();
 
-  // Validate with Zod
   const validation = productSchema.safeParse(productData);
   if (!validation.success) {
     throw new Error(
@@ -47,13 +46,12 @@ export async function createProductAction(productData: Partial<Product>) {
 }
 
 export async function updateProductAction(id: string, productData: Partial<Product>) {
-  await requireAdminSession();
+  await requireOwnerSession();
 
   if (!id || typeof id !== "string") {
     throw new Error("ID produk wajib diisi.");
   }
 
-  // Validate partial fields with Zod
   const validation = productSchema.partial().safeParse(productData);
   if (!validation.success) {
     throw new Error(
@@ -69,7 +67,7 @@ export async function updateProductAction(id: string, productData: Partial<Produ
 }
 
 export async function deleteProductAction(id: string) {
-  await requireAdminSession();
+  await requireOwnerSession();
 
   if (!id || typeof id !== "string") {
     throw new Error("ID produk wajib diisi.");

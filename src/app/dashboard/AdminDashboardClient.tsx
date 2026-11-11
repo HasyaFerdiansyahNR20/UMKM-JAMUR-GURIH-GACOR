@@ -6,31 +6,65 @@ import { StockToggle } from "@/components/admin/StockToggle";
 import { ProductManagement } from "@/components/admin/ProductManagement";
 import { BannerManagement } from "@/components/admin/BannerManagement";
 import { OrderLogs } from "@/components/admin/OrderLogs";
+import { StoreSettingsPanel } from "@/components/admin/StoreSettingsPanel";
+import { AccountManagement } from "@/components/admin/AccountManagement";
 import { StoreSettings, toggleEmergencyStaticModeAction } from "@/actions/settings";
-import { ToggleLeft, Utensils, Image as ImageIcon, ClipboardList, AlertTriangle, ShieldCheck, Plus } from "lucide-react";
+import { OwnerSecurityConfig, StaffAccount } from "@/lib/accountStore";
+import {
+  ToggleLeft,
+  Utensils,
+  Image as ImageIcon,
+  ClipboardList,
+  AlertTriangle,
+  ShieldCheck,
+  Plus,
+  Settings,
+  Users,
+} from "lucide-react";
 
 interface AdminDashboardClientProps {
+  userRole: "owner" | "admin";
+  userEmail: string;
+  userName: string;
   products: Product[];
   categories: Category[];
   promotions: Promotion[];
   orders: Order[];
   orderLogs: OrderLog[];
   initialSettings: StoreSettings;
+  initialOwner: OwnerSecurityConfig;
+  initialAdmins: StaffAccount[];
 }
 
+type DashboardTabId =
+  | "stock"
+  | "products"
+  | "promos"
+  | "orders"
+  | "settings"
+  | "accounts";
+
 export function AdminDashboardClient({
+  userRole,
+  userEmail,
+  userName,
   products,
   categories,
   promotions,
   orders,
   orderLogs,
   initialSettings,
+  initialOwner,
+  initialAdmins,
 }: AdminDashboardClientProps) {
-  const [activeTab, setActiveTab] = useState<"stock" | "products" | "promos" | "orders">("stock");
+  const [activeTab, setActiveTab] = useState<DashboardTabId>("stock");
   const [emergencyMode, setEmergencyMode] = useState(initialSettings.emergencyStaticMode);
   const [isTogglingEmergency, setIsTogglingEmergency] = useState(false);
 
+  const isOwner = userRole === "owner";
+
   const handleToggleEmergency = async () => {
+    if (!isOwner) return;
     const next = !emergencyMode;
     const confirmMsg = next
       ? "Aktifkan Mode Darurat Statis? Website publik akan menampilkan halaman teks statis sederhana saat basis data maintenance."
@@ -50,67 +84,115 @@ export function AdminDashboardClient({
     }
   };
 
-  const tabs = [
-    { id: "stock", label: "Ketersediaan Stok", icon: ToggleLeft },
-    { id: "products", label: "Katalog & Harga (Tambah Menu)", icon: Utensils, badge: products.length },
-    { id: "promos", label: "Banner Promo", icon: ImageIcon, badge: promotions.length },
-    { id: "orders", label: "Log Pesanan & Webhook", icon: ClipboardList, badge: orders.length },
+  // Filter tabs based on role:
+  // - Admin (Karyawan): only Stock & Orders
+  // - Owner: all 6 tabs (Stock, Products, Promos, Orders, Contact Settings, Account & Role Management)
+  const allTabs = [
+    { id: "stock" as const, label: "Ketersediaan Stok", icon: ToggleLeft, ownerOnly: false },
+    {
+      id: "products" as const,
+      label: "Katalog & Harga (Tambah Menu)",
+      icon: Utensils,
+      badge: products.length,
+      ownerOnly: true,
+    },
+    {
+      id: "promos" as const,
+      label: "Banner Promo",
+      icon: ImageIcon,
+      badge: promotions.length,
+      ownerOnly: true,
+    },
+    {
+      id: "orders" as const,
+      label: "Log Pesanan & Webhook",
+      icon: ClipboardList,
+      badge: orders.length,
+      ownerOnly: false,
+    },
+    {
+      id: "settings" as const,
+      label: "Info Kontak & Jam Buka",
+      icon: Settings,
+      ownerOnly: true,
+    },
+    {
+      id: "accounts" as const,
+      label: "Kelola Akun & Role",
+      icon: Users,
+      badge: initialAdmins.length,
+      ownerOnly: true,
+    },
   ];
+
+  const visibleTabs = allTabs.filter((t) => !t.ownerOnly || isOwner);
 
   return (
     <div className="space-y-6">
-      {/* Top Banner / Emergency Toggle & Quick Actions */}
+      {/* Top Banner / Role Badge / Quick Actions */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-5 rounded-3xl bg-white border border-stone-200 shadow-sm">
         <div>
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2.5 flex-wrap">
             <span className="p-1.5 rounded-xl bg-amber-100 text-amber-800">
               <ShieldCheck className="w-5 h-5" />
             </span>
             <h2 className="text-xl font-black text-stone-900">Dasbor Pengelola Toko</h2>
+            <span
+              className={`px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-wider ${
+                isOwner
+                  ? "bg-amber-500 text-stone-950 shadow-sm"
+                  : "bg-sky-100 text-sky-800 border border-sky-200"
+              }`}
+            >
+              {isOwner ? "👑 ROLE: OWNER (Akses Penuh)" : "👤 ROLE: ADMIN (Stok & Pesanan)"}
+            </span>
           </div>
           <p className="text-xs text-stone-500 mt-1">
-            Motto Dagang: <span className="font-bold text-amber-600">&ldquo;{initialSettings.tagline}&rdquo;</span>
+            Login sebagai: <strong className="text-stone-800">{userName}</strong> ({userEmail}) • Motto:{" "}
+            <span className="font-bold text-amber-600">&ldquo;{initialSettings.tagline}&rdquo;</span>
           </p>
         </div>
 
-        {/* Quick Add Product & PRD Emergency Button */}
-        <div className="flex items-center gap-3 self-start sm:self-auto flex-wrap">
-          <button
-            onClick={() => setActiveTab("products")}
-            className="px-5 py-2.5 rounded-full bg-amber-500 hover:bg-amber-600 text-white font-bold text-xs uppercase tracking-wider shadow-md hover:shadow-lg transition-all active:scale-95 flex items-center gap-2"
-          >
-            <Plus className="w-4 h-4" />
-            <span>Tambah Menu Baru</span>
-          </button>
+        {/* Quick Add Product & Emergency Button (Owner Only) */}
+        {isOwner && (
+          <div className="flex items-center gap-3 self-start sm:self-auto flex-wrap">
+            <button
+              onClick={() => setActiveTab("products")}
+              className="px-5 py-2.5 rounded-full bg-amber-500 hover:bg-amber-600 text-white font-bold text-xs uppercase tracking-wider shadow-md hover:shadow-lg transition-all active:scale-95 flex items-center gap-2 cursor-pointer"
+            >
+              <Plus className="w-4 h-4" />
+              <span>Tambah Menu Baru</span>
+            </button>
 
-          <button
-            onClick={handleToggleEmergency}
-            disabled={isTogglingEmergency}
-            className={`px-4 py-2.5 rounded-full text-xs font-bold uppercase tracking-wider flex items-center gap-2 transition-all ${
-              emergencyMode
-                ? "bg-red-600 hover:bg-red-700 text-white shadow-lg animate-pulse"
-                : "bg-stone-100 hover:bg-stone-200 text-stone-700 border border-stone-300"
-            }`}
-          >
-            <AlertTriangle className="w-4 h-4 text-amber-500" />
-            <span>
-              {emergencyMode ? "Mode Darurat: AKTIF" : "Tombol Darurat (Statis)"}
-            </span>
-          </button>
-        </div>
+            <button
+              onClick={handleToggleEmergency}
+              disabled={isTogglingEmergency}
+              className={`px-4 py-2.5 rounded-full text-xs font-bold uppercase tracking-wider flex items-center gap-2 transition-all cursor-pointer ${
+                emergencyMode
+                  ? "bg-red-600 hover:bg-red-700 text-white shadow-lg animate-pulse"
+                  : "bg-stone-100 hover:bg-stone-200 text-stone-700 border border-stone-300"
+              }`}
+            >
+              <AlertTriangle className="w-4 h-4 text-amber-500" />
+              <span>
+                {emergencyMode ? "Mode Darurat: AKTIF" : "Tombol Darurat (Statis)"}
+              </span>
+            </button>
+          </div>
+        )}
       </div>
 
       {/* Modular Tab Navigation */}
       <div className="flex items-center gap-2 overflow-x-auto pb-2 no-scrollbar">
-        {tabs.map((tab) => {
+        {visibleTabs.map((tab) => {
           const Icon = tab.icon;
           const isActive = activeTab === tab.id;
 
           return (
             <button
               key={tab.id}
-              onClick={() => setActiveTab(tab.id as any)}
-              className={`px-5 py-3 rounded-2xl text-xs font-black uppercase tracking-wider whitespace-nowrap transition-all flex items-center gap-2 ${
+              onClick={() => setActiveTab(tab.id)}
+              className={`px-5 py-3 rounded-2xl text-xs font-black uppercase tracking-wider whitespace-nowrap transition-all flex items-center gap-2 cursor-pointer ${
                 isActive
                   ? "bg-stone-900 text-white shadow-lg shadow-stone-900/10"
                   : "bg-white text-stone-600 border border-stone-200 hover:bg-stone-50"
@@ -137,15 +219,26 @@ export function AdminDashboardClient({
         {activeTab === "stock" && (
           <StockToggle
             initialProducts={products}
-            onSwitchToProducts={() => setActiveTab("products")}
+            onSwitchToProducts={isOwner ? () => setActiveTab("products") : undefined}
           />
         )}
-        {activeTab === "products" && (
+        {isOwner && activeTab === "products" && (
           <ProductManagement initialProducts={products} categories={categories} />
         )}
-        {activeTab === "promos" && <BannerManagement initialPromotions={promotions} />}
+        {isOwner && activeTab === "promos" && (
+          <BannerManagement initialPromotions={promotions} />
+        )}
         {activeTab === "orders" && (
           <OrderLogs initialOrders={orders} initialOrderLogs={orderLogs} />
+        )}
+        {isOwner && activeTab === "settings" && (
+          <StoreSettingsPanel initialSettings={initialSettings} />
+        )}
+        {isOwner && activeTab === "accounts" && (
+          <AccountManagement
+            initialOwner={initialOwner}
+            initialAdmins={initialAdmins}
+          />
         )}
       </div>
     </div>

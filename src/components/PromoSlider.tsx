@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from "react";
 import { ChevronLeft, ChevronRight, Tag, ArrowRight } from "lucide-react";
 import { Promotion } from "@/types";
+import { useCart } from "@/hooks/useCart";
 
 interface PromoSliderProps {
   promotions: Promotion[];
@@ -10,6 +11,7 @@ interface PromoSliderProps {
 
 export const PromoSlider: React.FC<PromoSliderProps> = ({ promotions }) => {
   const [currentSlide, setCurrentSlide] = useState(0);
+  const { setSelectedPromoId } = useCart();
 
   const activePromos = promotions.filter((p) => p.is_active);
 
@@ -75,6 +77,7 @@ export const PromoSlider: React.FC<PromoSliderProps> = ({ promotions }) => {
 
           <a
             href={safePromoLink}
+            onClick={() => setSelectedPromoId(promo.id)}
             className="inline-flex items-center gap-2 px-6 py-2.5 rounded-full bg-white text-stone-900 hover:bg-amber-50 font-extrabold text-xs uppercase tracking-wider shadow-md hover:shadow-lg transition-all active:scale-95"
           >
             <span>{promo.cta_text || "Klaim Promo"}</span>

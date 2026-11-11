@@ -6,8 +6,9 @@
 
 export const ADMIN_SESSION_COOKIE = "gurih_admin_session";
 
-interface SessionPayload {
+export interface SessionPayload {
   email: string;
+  username?: string;
   role: "admin" | "owner";
   iat: number;
   exp: number;
@@ -64,11 +65,13 @@ function getSecretKey(): string {
  */
 export async function createAdminSessionToken(
   email: string,
-  role: "admin" | "owner" = "admin"
+  role: "admin" | "owner" = "admin",
+  username?: string
 ): Promise<string> {
   const now = Date.now();
   const payload: SessionPayload = {
     email,
+    username: username || email.split("@")[0],
     role,
     iat: now,
     exp: now + 24 * 60 * 60 * 1000, // 24 hours
@@ -120,12 +123,11 @@ export async function verifySessionToken(
       return { valid: false };
     }
 
-    const dec = new TextDecoder();
-    const payloadStr = dec.decode(base64UrlDecode(dataB64));
-    const payload = JSON.parse(payloadStr) as SessionPayload;
+    const decodedStr = new TextDecoder().decode(base64UrlDecode(dataB64));
+    const payload = JSON.parse(decodedStr) as SessionPayload;
 
     if (!payload.exp || Date.now() > payload.exp) {
-      return { valid: false }; // Expired
+      return { valid: false };
     }
 
     return { valid: true, payload };

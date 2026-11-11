@@ -237,7 +237,19 @@ export const ProductManagement: React.FC<ProductManagementProps> = ({
                     className="w-10 h-10 rounded-xl object-cover shrink-0"
                   />
                   <div>
-                    <span className="font-bold text-stone-900 block">{p.name}</span>
+                    <div className="flex items-center gap-1.5 flex-wrap">
+                      <span className="font-bold text-stone-900">{p.name}</span>
+                      {p.is_promo && (
+                        <span className="px-2 py-0.5 rounded-full bg-red-100 text-red-700 text-[9px] font-black uppercase">
+                          🔥 Promo Diskon
+                        </span>
+                      )}
+                      {p.is_bestseller && (
+                        <span className="px-2 py-0.5 rounded-full bg-amber-100 text-amber-800 text-[9px] font-black uppercase">
+                          ★ Bestseller
+                        </span>
+                      )}
+                    </div>
                     <span className="text-[11px] text-stone-400 line-clamp-1">{p.description}</span>
                   </div>
                 </td>

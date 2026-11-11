@@ -27,6 +27,8 @@ export async function createOrderAction(input: {
   notes?: string;
   items: CartItem[];
   totalAmount: number;
+  discountAmount?: number;
+  promoTitle?: string;
   paymentMethod?: "Direct WhatsApp" | "Direct Telegram";
 }) {
   // 0. Anti-spam rate limiting (max 10 orders per minute per IP)

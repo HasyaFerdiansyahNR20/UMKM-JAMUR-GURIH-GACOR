@@ -1,30 +1,51 @@
 import { cookies } from "next/headers";
 import { ADMIN_SESSION_COOKIE, verifySessionToken } from "./session";
 import { supabaseAdmin } from "@/db";
+import { loadSystemConfig } from "./accountStore";
 
 export interface AuthCheckResult {
   isAuthenticated: boolean;
   email?: string;
-  role?: string;
+  username?: string;
+  role?: "owner" | "admin";
 }
 
 /**
- * Validates whether current request has an authenticated admin session.
- * Checks HMAC-signed session cookie and validates against Supabase Auth if present.
+ * Validates whether current request has an authenticated admin/owner session.
+ * Also verifies that an "admin" (karyawan) account has NOT been deleted (resigned).
  */
 export async function checkAdminAuth(): Promise<AuthCheckResult> {
   try {
     const cookieStore = await cookies();
-    
-    // 1. Check cryptographically signed admin session cookie
+
+    // 1. Check cryptographically signed admin/owner session cookie
     const signedToken = cookieStore.get(ADMIN_SESSION_COOKIE)?.value;
     if (signedToken) {
       const verification = await verifySessionToken(signedToken);
       if (verification.valid && verification.payload) {
+        const role = verification.payload.role === "owner" ? "owner" : "admin";
+
+        // If role is "admin" (karyawan), verify account still exists (not resigned/deleted)
+        if (role === "admin") {
+          const config = await loadSystemConfig();
+          const stillActive = config.admins.some(
+            (a) =>
+              a.email.toLowerCase() === verification.payload!.email.toLowerCase() ||
+              a.username.toLowerCase() ===
+                (verification.payload!.username || "").toLowerCase()
+          );
+          if (!stillActive) {
+            return { isAuthenticated: false };
+          }
+        }
+
         return {
           isAuthenticated: true,
           email: verification.payload.email,
-          role: verification.payload.role,
+          username:
+            verification.payload.username ||
+            verification.payload.email.split("@")[0],
+          role,
         };
       }
     }
@@ -46,7 +67,8 @@ export async function checkAdminAuth(): Promise<AuthCheckResult> {
             return {
               isAuthenticated: true,
               email: userEmail,
-              role: "admin",
+              username: userEmail.split("@")[0],
+              role: "owner",
             };
           }
         }
@@ -62,13 +84,23 @@ export async function checkAdminAuth(): Promise<AuthCheckResult> {
 }
 
 /**
- * Server Action & Route Guard.
- * Throws an explicit error if the caller is not an authenticated store admin.
+ * Server Action & Route Guard for Admin & Owner (Stock & Order Logs).
  */
 export async function requireAdminSession(): Promise<AuthCheckResult> {
   const auth = await checkAdminAuth();
   if (!auth.isAuthenticated) {
     throw new Error("Unauthorized: Tindakan ini memerlukan otentikasi pengelola toko yang sah.");
+  }
+  return auth;
+}
+
+/**
+ * Server Action & Route Guard exclusively for Owner (Products, Promos, Contact Settings, Account Management).
+ */
+export async function requireOwnerSession(): Promise<AuthCheckResult> {
+  const auth = await checkAdminAuth();
+  if (!auth.isAuthenticated || auth.role !== "owner") {
+    throw new Error("Forbidden: Tindakan ini hanya dapat dilakukan oleh akun berstatus OWNER.");
   }
   return auth;
 }

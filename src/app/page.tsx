@@ -101,7 +101,7 @@ export default async function HomePage() {
       <TestimonialsSection />
 
       {/* 8. KONTAK (WhatsApp, Instagram, TikTok, Alamat, Google Maps, Jam Operasional) */}
-      <ContactSection />
+      <ContactSection settings={settings} />
     </div>
   );
 }

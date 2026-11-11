@@ -247,6 +247,11 @@ export const MenuCardsRow: React.FC<MenuCardsRowProps> = ({ products }) => {
                         <span className="text-xs font-black text-white">
                           {product.rating || 4.8}
                         </span>
+                        {product.is_promo && (
+                          <span className="ml-2 px-2 py-0.5 rounded-full bg-white text-red-700 text-[10px] font-black uppercase tracking-wider shadow-sm">
+                            🔥 Promo Diskon
+                          </span>
+                        )}
                       </div>
 
                       {/* Short Description */}

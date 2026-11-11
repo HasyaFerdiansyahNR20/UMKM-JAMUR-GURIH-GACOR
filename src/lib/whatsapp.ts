@@ -13,6 +13,9 @@ export interface WhatsAppOrderData {
   tableNumber?: string;
   notes?: string;
   items: CartItem[];
+  subtotalAmount?: number;
+  discountAmount?: number;
+  promoTitle?: string;
   totalAmount: number;
   orderNumber?: string;
 }
@@ -80,6 +83,11 @@ export function formatWhatsAppMessage(data: WhatsAppOrderData): string {
   });
 
   text += `═══════════════════════\n`;
+  if (data.discountAmount && data.discountAmount > 0) {
+    const sub = data.subtotalAmount ?? data.totalAmount + data.discountAmount;
+    text += `🧾 *Subtotal:* ${formatRupiahShort(sub)}\n`;
+    text += `🎟️ *Promo (${data.promoTitle || "Diskon Promo"}):* -${formatRupiahShort(data.discountAmount)}\n`;
+  }
   text += `💵 *TOTAL TAGIHAN: ${formatRupiahShort(data.totalAmount)}*\n`;
   
   if (data.notes) {
@@ -135,4 +143,3 @@ export function generateDirectProductTelegramUrl(params: DirectProductOrderParam
   const text = formatDirectProductMessage(params);
   return `https://t.me/${botUsername}?text=${encodeURIComponent(text)}`;
 }
-

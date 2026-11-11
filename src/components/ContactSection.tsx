@@ -2,13 +2,32 @@
 
 import React, { useState } from "react";
 import { Phone, MapPin, Clock, Instagram, Share2, Check, ExternalLink, MessageCircle } from "lucide-react";
+import { StoreSettings } from "@/actions/settings";
 
-export const ContactSection: React.FC = () => {
+interface ContactSectionProps {
+  settings?: StoreSettings;
+}
+
+export const ContactSection: React.FC<ContactSectionProps> = ({ settings }) => {
   const [copied, setCopied] = useState(false);
 
-  const whatsappPhone = process.env.NEXT_PUBLIC_WHATSAPP_NUMBER || "62895634949189";
-  const displayPhone = "0895-6349-49189";
-  const address = "Jl. Reni Jaya Utara 1 Gg. H. Muntir No.4, Pd. Petir, Kec. Bojongsari, Kota Tangerang Selatan, Banten 16517";
+  const whatsappPhone =
+    settings?.whatsappNumber || process.env.NEXT_PUBLIC_WHATSAPP_NUMBER || "62895634949189";
+  const displayPhone = whatsappPhone.startsWith("62")
+    ? `0${whatsappPhone.slice(2)}`
+    : whatsappPhone;
+  const address =
+    settings?.address ||
+    "Jl. Reni Jaya Utara 1 Gg. H. Muntir No.4, Pd. Petir, Kec. Bojongsari, Kota Tangerang Selatan, Banten 16517";
+  const operatingDays = settings?.operatingDays || "Senin – Minggu";
+  const operatingHours = settings?.operatingHours || "09.00 – 21.00 WIB";
+  const operatingNote =
+    settings?.operatingNote || "*Menerima pesanan online & takeaway setiap hari.";
+  const instagramUsername = settings?.instagramUsername || "@gurih.gacor";
+  const instagramUrl = settings?.instagramUrl || "https://www.instagram.com/gurih.gacor/";
+  const tiktokUsername = settings?.tiktokUsername || "@gurih.gacor";
+  const tiktokUrl = settings?.tiktokUrl || "https://www.tiktok.com/@gurih.gacor";
+  const mapsUrl = settings?.mapsUrl || "https://maps.app.goo.gl/3vqf68ptrZtxmxbo7";
 
   const handleCopyAddress = () => {
     navigator.clipboard.writeText(address);
@@ -19,7 +38,6 @@ export const ContactSection: React.FC = () => {
   return (
     <section id="kontak" className="py-20 bg-[#faf8f5] relative overflow-hidden">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        
         {/* Header */}
         <div className="text-center max-w-2xl mx-auto mb-16">
           <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-amber-100 text-amber-900 text-xs font-bold uppercase tracking-wider mb-3">
@@ -27,7 +45,7 @@ export const ContactSection: React.FC = () => {
             <span>Hubungi Kami</span>
           </div>
           <h2 className="text-3xl sm:text-4xl font-black text-stone-900 tracking-tight leading-tight">
-            Lokasi & Kontak <span className="text-amber-600">Gurih Gacor</span>
+            Lokasi &amp; Kontak <span className="text-amber-600">Gurih Gacor</span>
           </h2>
           <p className="mt-3 text-stone-600 text-sm sm:text-base">
             Ada pertanyaan, pesanan jumlah banyak untuk acara, atau ingin mampir langsung ke outlet? Kami siap melayani!
@@ -36,10 +54,8 @@ export const ContactSection: React.FC = () => {
 
         {/* Content Grid */}
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
-          
           {/* Left Column: Contact Cards */}
           <div className="lg:col-span-5 space-y-4">
-            
             {/* WhatsApp Direct Order Card */}
             <div className="bg-white rounded-3xl p-6 sm:p-7 border border-stone-200/90 shadow-sm hover:shadow-md transition-all">
               <div className="flex items-start gap-4">
@@ -84,11 +100,11 @@ export const ContactSection: React.FC = () => {
                   </h3>
                   <div className="mt-2 space-y-1 text-xs sm:text-sm text-stone-600">
                     <p className="flex justify-between gap-4">
-                      <span className="font-semibold text-stone-800">Senin – Minggu:</span>
-                      <span className="font-black text-amber-700">09.00 – 21.00 WIB</span>
+                      <span className="font-semibold text-stone-800">{operatingDays}:</span>
+                      <span className="font-black text-amber-700">{operatingHours}</span>
                     </p>
                     <p className="text-[11px] text-stone-400 italic mt-1">
-                      *Menerima pesanan online & takeaway setiap hari.
+                      {operatingNote}
                     </p>
                   </div>
                 </div>
@@ -103,7 +119,7 @@ export const ContactSection: React.FC = () => {
                 </div>
                 <div className="flex-1">
                   <span className="text-[11px] font-bold uppercase tracking-wider text-rose-600 block">
-                    Outlet & Dapur Utama
+                    Outlet &amp; Dapur Utama
                   </span>
                   <h3 className="text-lg font-black text-stone-900 mt-0.5">
                     Alamat Fisik
@@ -138,26 +154,25 @@ export const ContactSection: React.FC = () => {
               </span>
               <div className="flex flex-wrap gap-3">
                 <a
-                  href="https://www.instagram.com/gurih.gacor/"
+                  href={instagramUrl}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="flex items-center gap-2 px-4 py-2 rounded-2xl bg-gradient-to-r from-purple-50 to-pink-50 border border-pink-200 text-pink-700 text-xs font-extrabold hover:shadow-sm transition-all"
                 >
                   <Instagram className="w-4 h-4" />
-                  <span>@gurih.gacor</span>
+                  <span>{instagramUsername}</span>
                 </a>
                 <a
-                  href="https://www.tiktok.com/@gurih.gacor"
+                  href={tiktokUrl}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="flex items-center gap-2 px-4 py-2 rounded-2xl bg-stone-100 border border-stone-200 text-stone-800 text-xs font-extrabold hover:shadow-sm transition-all"
                 >
                   <span className="text-xs font-black">TikTok:</span>
-                  <span>@gurih.gacor</span>
+                  <span>{tiktokUsername}</span>
                 </a>
               </div>
             </div>
-
           </div>
 
           {/* Right Column: Google Maps Embed Card */}
@@ -172,31 +187,30 @@ export const ContactSection: React.FC = () => {
                 </p>
               </div>
               <a
-                href="https://maps.app.goo.gl/3vqf68ptrZtxmxbo7"
+                href={mapsUrl}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="px-3.5 py-1.5 rounded-full border border-stone-300 hover:border-amber-500 bg-stone-50 text-stone-700 text-xs font-bold inline-flex items-center gap-1.5 transition-colors"
               >
                 <span>Buka di Aplikasi</span>
-                <ExternalLink className="w-3.5 h-3.5" />
+                <ExternalLink className="w-3.5 h-3.5 text-amber-600" />
               </a>
             </div>
 
-            {/* Embedded Google Maps iFrame */}
-            <div className="relative flex-1 w-full min-h-[400px] rounded-2xl overflow-hidden border border-stone-200 bg-stone-100">
+            <div className="relative flex-1 w-full rounded-2xl overflow-hidden bg-stone-100 min-h-[380px]">
               <iframe
-                title="Google Maps Lokasi Gurih Gacor"
-                src="https://maps.google.com/maps?q=-6.3683611,106.7276389&hl=id&z=17&output=embed"
-                className="absolute inset-0 w-full h-full border-0"
+                title="Peta Lokasi UMKM Gurih Gacor"
+                src="https://maps.google.com/maps?q=Jl.+Reni+Jaya+Utara+1+Gg.+H.+Muntir+No.4,+Pd.+Petir,+Kec.+Bojongsari,+Kota+Tangerang+Selatan&t=&z=16&ie=UTF8&iwloc=&output=embed"
+                width="100%"
+                height="100%"
+                style={{ border: 0, position: "absolute", top: 0, left: 0 }}
                 allowFullScreen={false}
                 loading="lazy"
                 referrerPolicy="no-referrer-when-downgrade"
               />
             </div>
           </div>
-
         </div>
-
       </div>
     </section>
   );

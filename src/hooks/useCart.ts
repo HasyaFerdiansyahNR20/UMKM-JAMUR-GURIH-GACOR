@@ -39,6 +39,7 @@ const DEFAULT_CHECKOUT_INFO: CheckoutFormInfo = {
 interface CartState {
   items: CartItem[];
   isOpen: boolean;
+  selectedPromoId: string;
   checkoutInfo: CheckoutFormInfo;
   lastSubmittedOrder: LastSubmittedOrder | null;
   productDrafts: Record<string, ProductModalDraft>;
@@ -55,6 +56,7 @@ interface CartState {
   openCart: () => void;
   closeCart: () => void;
   toggleCart: () => void;
+  setSelectedPromoId: (promoId: string) => void;
   setCheckoutInfo: (partial: Partial<CheckoutFormInfo>) => void;
   resetCheckoutInfo: () => void;
   setLastSubmittedOrder: (order: LastSubmittedOrder | null) => void;
@@ -83,6 +85,7 @@ export const useCart = create<CartState>()(
     (set, get) => ({
       items: [],
       isOpen: false,
+      selectedPromoId: "",
       checkoutInfo: DEFAULT_CHECKOUT_INFO,
       lastSubmittedOrder: null,
       productDrafts: {},
@@ -151,10 +154,11 @@ export const useCart = create<CartState>()(
         }));
       },
 
-      clearCart: () => set({ items: [], lastSubmittedOrder: null }),
+      clearCart: () => set({ items: [], selectedPromoId: "", lastSubmittedOrder: null }),
       openCart: () => set({ isOpen: true }),
       closeCart: () => set({ isOpen: false }),
       toggleCart: () => set((state) => ({ isOpen: !state.isOpen })),
+      setSelectedPromoId: (promoId) => set({ selectedPromoId: promoId }),
 
       setCheckoutInfo: (partial) =>
         set((state) => ({
@@ -194,6 +198,7 @@ export const useCart = create<CartState>()(
       name: "umkm-gurih-gacor-cart-v2",
       partialize: (state) => ({
         items: state.items,
+        selectedPromoId: state.selectedPromoId,
         checkoutInfo: state.checkoutInfo,
         lastSubmittedOrder: state.lastSubmittedOrder,
         productDrafts: state.productDrafts,

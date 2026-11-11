@@ -223,6 +223,17 @@ export const CatalogGrid: React.FC<CatalogGridProps> = ({ products }) => {
                         </div>
                       )}
 
+                      {product.is_promo && isAvailable && (
+                        <div className="bg-gradient-to-r from-red-600 to-orange-500 text-white text-[10px] font-black uppercase tracking-wider px-2.5 py-0.5 rounded-full shadow-md flex items-center gap-1">
+                          <span>🔥 Promo Diskon</span>
+                          {product.original_price && product.original_price > product.price && (
+                            <span className="bg-white text-red-700 px-1.5 rounded-full text-[9px] font-black">
+                              -{Math.round(((product.original_price - product.price) / product.original_price) * 100)}%
+                            </span>
+                          )}
+                        </div>
+                      )}
+
                       {product.is_bestseller && isAvailable && (
                         <Badge variant="gold" size="sm">
                           Bestseller
@@ -248,7 +259,13 @@ export const CatalogGrid: React.FC<CatalogGridProps> = ({ products }) => {
                         <span className="text-lg font-black text-amber-600">
                           {formatRupiahShort(product.price || 5000)}
                         </span>
-                        <span className="text-[11px] text-stone-400 font-medium">/ Small</span>
+                        {product.original_price && product.original_price > product.price ? (
+                          <span className="text-xs text-stone-400 line-through font-semibold ml-1">
+                            {formatRupiahShort(product.original_price)}
+                          </span>
+                        ) : (
+                          <span className="text-[11px] text-stone-400 font-medium">/ Small</span>
+                        )}
                       </div>
                       <div className="flex items-center gap-1 text-xs font-bold text-stone-700 bg-amber-50 px-2 py-0.5 rounded-md border border-amber-200/60">
                         <Star className="w-3.5 h-3.5 fill-amber-400 text-amber-400" />
